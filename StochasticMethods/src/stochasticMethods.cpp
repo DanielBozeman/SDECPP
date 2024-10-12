@@ -2,6 +2,37 @@
 #include <vector>
 #include "RandomUtils.hpp"
 
+stochasticModel::stochasticModel(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters){
+    alphaFunction = alphaFunction;
+    betaFunction = betaFunction;
+    initialValue = initialValue;
+    timeInterval = timeInterval;
+    parameters = parameters;
+}
+
+std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath)
+{
+    std::vector<double> approximation = {model.initialValue};
+
+    double dt = model.timeInterval[1] - model.timeInterval[0];
+
+    if(brownianPath.size() == 0){
+        randomPathMaker rp = randomPathMaker();
+        brownianPath = rp.makePath(model.timeInterval[0], model.timeInterval.back(), dt);
+    }
+
+    approximation.reserve((model.timeInterval.back() - model.timeInterval[0])/dt);
+
+    for(int i = 1; i < model.timeInterval.size(); i++){
+        double prevValue = approximation[i-1];
+        double prevTime = model.timeInterval[i-1];
+        double dW = brownianPath[i] - brownianPath[i-1];
+        approximation.push_back((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters)*dt + model.betaFunction(prevValue, prevTime, model.parameters)*dW ));
+    }
+
+    return approximation;
+}
+
 std::vector<double> eulerMaruyama(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters, std::vector<double> brownianPath)
 {
     std::vector<double> approximation = {initialValue};
