@@ -9,15 +9,15 @@ class stochasticModel{
     private:
 
     public:
-    stochasticModel(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters);
     stochastic_function alphaFunction;
     stochastic_function betaFunction;
     double initialValue;
     std::vector<double> timeInterval;
     std::vector<double> parameters;
+    stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<double> constants);  
 };
 
-std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath);
+std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath = {});
 
 std::vector<double> eulerMaruyama(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters, std::vector<double> brownianPath = {});
 

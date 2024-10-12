@@ -2,12 +2,12 @@
 #include <vector>
 #include "RandomUtils.hpp"
 
-stochasticModel::stochasticModel(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters){
-    alphaFunction = alphaFunction;
-    betaFunction = betaFunction;
-    initialValue = initialValue;
-    timeInterval = timeInterval;
-    parameters = parameters;
+stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<double> constants){
+    alphaFunction = function1;
+    betaFunction = function2;
+    initialValue = startValue;
+    timeInterval = times;
+    parameters = constants;
 }
 
 std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath)

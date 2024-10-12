@@ -74,8 +74,11 @@ std::vector<std::vector<double>> eulerMaruyamaTest(int numSims){
 
     std::vector<std::vector<double>> approximations;
 
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants);
+
     for( int i = 0; i < numSims; i++){
-        approximations.push_back(eulerMaruyama(alphaFunction, betaFunction, initialValue, times, constants));
+        approximations.push_back(eulerMaruyama(model));
+        //approximations.push_back(eulerMaruyama(alphaFunction, betaFunction, initialValue, times, constants));
     }
     return approximations;
 }
@@ -86,7 +89,8 @@ void fileWriterTest(){
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    
+    std::cout << "\nStarting test";
+
     eulerMaruyamaTest(10000);
 
     auto t2 = std::chrono::high_resolution_clock::now();
