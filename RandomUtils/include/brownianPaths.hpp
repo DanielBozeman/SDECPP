@@ -16,6 +16,7 @@ class randomPathMaker{
     randomPathMaker();
     double dW(double);
     std::vector<double> makePath(double intervalStart, double intervalEnd, double timeStep);
+    std::vector<std::vector<double>> makeMultiplePaths(double intervalStart, double intervalEnd, double timeStep, int numPaths);
     std::vector<std::vector<double>> makeCorrelatedPaths(double, double, double, double);
 };
 

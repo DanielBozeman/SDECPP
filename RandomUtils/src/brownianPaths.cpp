@@ -77,6 +77,31 @@ std::vector<double> randomPathMaker::makePath(double intervalStart, double inter
             return brownianPath;
         }
 
+std::vector<std::vector<double>> randomPathMaker::makeMultiplePaths(double intervalStart, double intervalEnd, double timeStep, int numPaths){
+            std::vector<std::vector<double>> paths;
+
+            paths.reserve(numPaths * ((intervalEnd - intervalStart)/timeStep));
+            
+            for(int i = 0; i < numPaths; i++){
+                std::vector<double> brownianPath = {0};
+
+                brownianPath.reserve((intervalEnd - intervalStart)/timeStep);
+
+                double totalInterval = intervalEnd - intervalStart;
+
+                double currentTime = intervalStart;
+
+                while (currentTime < intervalEnd-timeStep){
+                    brownianPath.push_back((brownianPath.back() + dW(timeStep)));
+                    currentTime += timeStep;
+                }
+
+                paths.push_back(brownianPath);
+            }
+
+            return paths;
+        }
+
 std::vector<std::vector<double>> randomPathMaker::makeCorrelatedPaths(double intervalStart, double intervalEnd, double timeStep, double correlation){
     std::vector<double> path1 = makePath(intervalStart, intervalEnd, timeStep);
     std::vector<double> path2 = makePath(intervalStart, intervalEnd, timeStep);
