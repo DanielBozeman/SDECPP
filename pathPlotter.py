@@ -9,6 +9,10 @@ if __name__ == "__main__":
 
     df.drop(df.tail(1).index,inplace=True) 
 
+    print(df.shape)
+
+    print(df.head)
+
     times = np.arange(df.shape[0])
 
     for column in df.columns:
