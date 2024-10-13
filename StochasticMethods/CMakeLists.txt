@@ -8,4 +8,4 @@ endif()
 
 
 include_directories(include)
-add_library(${PROJECT_NAME} src/stochasticMethods.cpp)
+add_library(${PROJECT_NAME} src/stochasticMethods.cpp src/parameterEstimation.cpp)
