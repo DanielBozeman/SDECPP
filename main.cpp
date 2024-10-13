@@ -104,6 +104,43 @@ void fileWriterTest(){
     std::cout << "\nTime taken: " << ms_double.count()/1000;
 }
 
+void rmseTest(){
+    std::vector<double> actual = {0,3,5,6};
+    std::vector<double> prediction = {0,0,0,0};
+
+    double rms = rmse(actual, prediction);
+
+    std::cout << "\n RMSE is " << rms;
+}
+
+void parameterNeighborTest(){
+    std::vector<double> parameters = {0, 5, 7};
+    std::vector<std::vector<double>> parameterLimits = {{-2,0},{0,20},{-20,8}};
+    std::vector<double> parameterSteps = {0.1, 1, 0.001};
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    std::cout << "\nStarting test";
+
+    for(int i = 0; i < 1000; i++){
+        //std::cout << "\n";
+        //for(int j = 0; j < parameters.size(); j++){
+            //std::cout << parameters[j] << " ";
+        //}
+        parameterNeighbor(parameters, parameterLimits, parameterSteps);
+    }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+
+    /* Getting number of milliseconds as an integer. */
+    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+
+    /* Getting number of milliseconds as a double. */
+    std::chrono::duration<double, std::milli> ms_double = t2 - t1;
+
+    std::cout << "\nTime taken: " << ms_double.count()/1000;
+}
+
 int main(){
-    fileWriterTest();
+    brownianPathTester();
 }
