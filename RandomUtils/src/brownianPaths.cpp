@@ -3,6 +3,12 @@
 #include <chrono>
 
 
+Xoshiro256plus timeSeedRand()
+{
+    return(Xoshiro256plus(int(std::chrono::system_clock::now().time_since_epoch().count())));
+} 
+
+Xoshiro256plus randomGenerator = timeSeedRand();
 
 double randomPathMaker::inv_normal_cdf(double p) {
             double a1 = -39.69683028665376;
@@ -47,11 +53,10 @@ double randomPathMaker::inv_normal_cdf(double p) {
         }
 
 randomPathMaker::randomPathMaker(){
-    rand1 = Xoshiro256plus(int(std::chrono::system_clock::now().time_since_epoch().count()));
-    }
+}
 
 double randomPathMaker::dW(double dt){
-    return (inv_normal_cdf(rand1.d01())* dt);
+    return (inv_normal_cdf(randomGenerator.d01())* dt);
 }
 
 std::vector<double> randomPathMaker::makePath(double intervalStart, double intervalEnd, double timeStep){

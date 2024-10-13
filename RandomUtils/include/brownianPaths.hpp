@@ -5,9 +5,12 @@
 #include <vector>
 #include "Xoshiro256plus.h"
 
+Xoshiro256plus timeSeedRand();
+
+extern Xoshiro256plus randomGenerator;
+
 class randomPathMaker{
     private:
-    Xoshiro256plus rand1;
     double inv_normal_cdf(double);
     public:
     randomPathMaker();
