@@ -40,7 +40,7 @@ double betaFunction(double value, double time, std::vector<double> parameters){
     return (parameters[1]*value);
 }
 
-std::vector<std::vector<double>> eulerMaruyamaTest(int numSims){
+std::vector<double> eulerMaruyamaTest(int numSims){
 
     randomPathMaker rp;
 
@@ -61,15 +61,11 @@ std::vector<std::vector<double>> eulerMaruyamaTest(int numSims){
         times.push_back(times.back()+timeDiscretization);
     }
 
-    std::vector<std::vector<double>> approximations;
-
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants);
 
-    for( int i = 0; i < numSims; i++){
-        approximations.push_back(eulerMaruyama(model));
-        //approximations.push_back(eulerMaruyama(alphaFunction, betaFunction, initialValue, times, constants));
-    }
-    return approximations;
+    std::vector<double> approximation = averageEulerMaruyama(model, numSims);
+
+    return approximation;
 }
 
 void fileWriterTest(){
@@ -80,7 +76,9 @@ void fileWriterTest(){
 
     std::cout << "\nStarting test";
 
-    eulerMaruyamaTest(10000);
+    std::vector<double> approximation = eulerMaruyamaTest(1000);
+
+    vectorToCSV(approximation, "output.csv");
 
     auto t2 = std::chrono::high_resolution_clock::now();
 
@@ -131,5 +129,5 @@ void parameterNeighborTest(){
 }
 
 int main(){
-    brownianPathTester();
+    fileWriterTest();
 }

@@ -49,6 +49,8 @@ void parameterNeighbor(std::vector<double>& currentParameters, std::vector<std::
 void simulatedAnnealingParameterEstimation(stochasticModel model, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit){
     double temperature = startingTemperature;
 
+    
+
     while (temperature > temperatureLimit){
         for(int i = 0; i < stepsAtTemp; i++){
             
