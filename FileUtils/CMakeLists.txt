@@ -2,4 +2,4 @@ cmake_minimum_required(VERSION 3.5.0)
 project(FileUtils)
 
 include_directories(include)
-add_library(${PROJECT_NAME} src/fileWriter.cpp fileUtils.hpp)
+add_library(${PROJECT_NAME} src/fileWriter.cpp src/fileReader.cpp)

@@ -5,6 +5,7 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
+#include <limits>
 
 
 
@@ -46,17 +47,37 @@ void parameterNeighbor(std::vector<double>& currentParameters, std::vector<std::
     return;
 }
 
-void simulatedAnnealingParameterEstimation(stochasticModel model, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit){
+void simulatedAnnealingParameterEstimation(stochasticModel& model, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit){
     double temperature = startingTemperature;
 
-    
+    std::vector<double> curApproximation;
+    double RMS;
+    double prob;
+    double oldRMS = std::numeric_limits<double>::infinity();
+
+    stochasticModel currentModel = model;
+    stochasticModel bestModel = model;
 
     while (temperature > temperatureLimit){
         for(int i = 0; i < stepsAtTemp; i++){
+            curApproximation = averageEulerMaruyama(currentModel, numSimulations);
+
             
+            RMS = rmse(observations, curApproximation);
+
+            prob = acceptanceProbability(RMS, oldRMS, temperature);
+
+            if (prob > randomGenerator.d01()){
+                bestModel = currentModel;
+            }
+
+            parameterNeighbor(currentModel.parameters, currentModel.parameterLimits, currentModel.parameterSteps);       
         }
         temperature *= coolingRate;
+        std::cout << "\nTemperature: " << temperature;
     }
+
+    model = bestModel;
 }
 
 

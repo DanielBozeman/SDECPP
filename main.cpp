@@ -128,6 +128,40 @@ void parameterNeighborTest(){
     std::cout << "\nTime taken: " << ms_double.count()/1000;
 }
 
+void simulatedAnnealingTest(){
+    std::vector<double> observations = {0,2,6,8,3,15,8,3,7,0,2};
+
+    randomPathMaker rp;
+
+    double intervalStart = 0;
+    double intervalEnd = 10;
+
+    double timeDiscretization = 1;
+
+    std::vector<double> constants = {0.05, 0.2};
+
+    std::vector<std::vector<double>> constantLimits = {{-4,5},{0,1}};
+
+    std::vector<double> constantSteps = {0.1, 0.001};
+
+    double initialValue = 5;
+
+    std::vector<double> times = {0};
+
+    times.reserve((intervalEnd - intervalStart)/timeDiscretization);
+
+    while (times.back() < intervalEnd){
+        times.push_back(times.back()+timeDiscretization);
+    }
+
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
+
+    simulatedAnnealingParameterEstimation(model, observations, 500, 100, 0.9, 50, 0.1);
+
+    std::cout << "\n\nParameter 1: " << model.parameters[0];
+    std::cout << "\nParameter 2: " << model.parameters[1]; 
+}
+
 int main(){
-    fileWriterTest();
+    csvColumnToVector("StockData/SPX_Post61.csv", 0);
 }

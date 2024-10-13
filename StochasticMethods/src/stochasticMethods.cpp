@@ -2,11 +2,17 @@
 #include <vector>
 #include "RandomUtils.hpp"
 
-stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<double> constants){
+stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<double> constants, std::vector<std::vector<double>> constantLimits, std::vector<double> stepSizes){
     alphaFunction = function1;
     betaFunction = function2;
     initialValue = startValue;
     timeInterval = times;
+    parameters = constants;
+    parameterLimits = constantLimits;
+    parameterSteps = stepSizes;
+}
+
+void stochasticModel::setParameters(std::vector<double> constants){
     parameters = constants;
 }
 
