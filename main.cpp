@@ -9,7 +9,6 @@
 #include "FileUtils.hpp"
 
 void brownianPathTester(){
-    std::vector<double> brown;
     randomPathMaker rp;
 
     std::string fileName = "output.csv";
@@ -19,19 +18,9 @@ void brownianPathTester(){
     std::ofstream outfile(fileName);
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < 1; i++){
-        std::vector<std::vector<double>> paths = rp.makeCorrelatedPaths(0, 10, 0.005, -0.5);
 
-        std::vector<double> brown1 = paths[0];
-        std::vector<double> brown2 = paths[1];
+    std::vector<std::vector<double>> paths = rp.makeMultiplePaths(0, 10, 0.001, 500);
 
-        for(int i = 0; i < paths[0].size(); i++){
-            for(int j = 0; j < paths.size(); j++){
-                outfile << paths[j][i] << ",";
-            }
-            outfile << "\n";
-        }
-    }
     auto t2 = std::chrono::high_resolution_clock::now();
 
     /* Getting number of milliseconds as an integer. */
