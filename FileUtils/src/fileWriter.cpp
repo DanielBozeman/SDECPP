@@ -9,17 +9,17 @@ void vectorToCSV(std::vector<double> outVector, std::string fileName){
     bool status = std::filesystem::remove(fileName);
 
     if(status){
-        printf( "Successfully removed file\n" );
+        printf( "\nSuccessfully removed file" );
     } else {
-        printf( "No such file!\n"); // No such file or directory
+        printf( "\nNo such file!"); // No such file or directory
     }
 
     std::ofstream outfile(fileName);
 
     if (!outfile.is_open()) {
-        std::cout << "Error opening file!\n";
+        std::cout << "\nError opening file!";
     }else{
-        std::cout << "File Opened!\n";
+        std::cout << "\nFile Opened!";
     }
 
     for(int i = 0; i < outVector.size(); i++){
@@ -27,7 +27,7 @@ void vectorToCSV(std::vector<double> outVector, std::string fileName){
     }
 
 
-    std::cout << "File contents written!";
+    std::cout << "\nFile contents written!";
 
     outfile.close();
 
@@ -37,17 +37,17 @@ void multiVectorToCSV(std::vector<std::vector<double>> outVectors, std::string f
     bool status = std::filesystem::remove(fileName);
 
     if(status){
-        printf( "Successfully removed file\n" );
+        printf( "\nSuccessfully removed file" );
     } else {
-        printf( "No such file!\n"); // No such file or directory
+        printf( "\nNo such file!"); // No such file or directory
     }
 
     std::ofstream outfile(fileName);
 
     if (!outfile.is_open()) {
-        std::cout << "Error opening file!\n";
+        std::cout << "\nError opening file!";
     }else{
-        std::cout << "File Opened!\n";
+        std::cout << "\nFile Opened!";
     }
 
     for(int i = 0; i < outVectors[0].size(); i++){
@@ -58,7 +58,7 @@ void multiVectorToCSV(std::vector<std::vector<double>> outVectors, std::string f
     }
 
 
-    std::cout << "File contents written!";
+    std::cout << "\nFile contents written!";
 
     outfile.close();
 }
