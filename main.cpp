@@ -163,5 +163,9 @@ void simulatedAnnealingTest(){
 }
 
 int main(){
-    csvColumnToVector("StockData/SPX_Post61.csv", 0);
+    std::vector<double> stockRows = csvColumnToVector("StockData/SPX_Post61.csv", 0);
+
+    for(int i = 0; i < stockRows.size(); i ++){
+        std::cout << "\n" << stockRows[i];
+    }
 }

@@ -1,28 +1,45 @@
 #include "fileReader.hpp"
+#include "csv.h"
 #include <vector>
 #include <string>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
-void csvColumnToVector(std::string fileName, int column){
+std::vector<double> csvColumnToVector(std::string fileName, int column, int rowsToSkip){
 
-    std::ifstream infile(fileName);
+    std::ifstream file(fileName);
 
-    if (!infile.is_open()) {
-        std::cout << "\nError opening file!";
-    }else{
-        std::cout << "\nFile Opened!";
+    if (!file.is_open()) {
+        std::cout << "Error: Could not open file " << fileName << std::endl;
     }
 
+    std::vector<double> data;
     std::string line;
-    while (std::getline(infile, line)) {
-        std::cout << line << std::endl;
+
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string value;
+        
+        int count = -1;
+        while (std::getline(ss, value, ',')) {
+            count++;
+
+            if(count < column){
+                continue;
+            }
+            try{
+                data.push_back(std::stod(value));
+                break;
+            }catch(...){
+
+            }
+        }
     }
 
-    std::cout << "\nFile contents read!";
+    file.close();
 
-    infile.close();
+    std::cout << "\nSize: " << data.size();
 
-    return;
+    return data;
 }
