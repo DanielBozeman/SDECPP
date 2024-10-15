@@ -4,6 +4,7 @@
 #include <chrono>
 #include <fstream>
 #include <string>
+#include <numeric>
 #include "RandomUtils.hpp"
 #include "stochastic.hpp"
 #include "FileUtils.hpp"
@@ -128,44 +129,109 @@ void parameterNeighborTest(){
     std::cout << "\nTime taken: " << ms_double.count()/1000;
 }
 
-void simulatedAnnealingTest(){
-    std::vector<double> observations = {0,2,6,8,3,15,8,3,7,0,2};
+std::vector<double> simulatedAnnealingTest(){
+    std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
 
-    randomPathMaker rp;
+    std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
 
-    double intervalStart = 0;
-    double intervalEnd = 10;
+    stockCloses = y;
 
-    double timeDiscretization = 1;
+    std::vector<double> times = {};
 
-    std::vector<double> constants = {0.05, 0.2};
-
-    std::vector<std::vector<double>> constantLimits = {{-4,5},{0,1}};
-
-    std::vector<double> constantSteps = {0.1, 0.001};
-
-    double initialValue = 5;
-
-    std::vector<double> times = {0};
-
-    times.reserve((intervalEnd - intervalStart)/timeDiscretization);
-
-    while (times.back() < intervalEnd){
-        times.push_back(times.back()+timeDiscretization);
+    for(int i = 0; i < stockCloses.size(); i++){
+        times.push_back(i);
     }
+
+    std::vector<double> constants = {0, 0};
+
+    std::vector<std::vector<double>> constantLimits = {{0,2},{0,2}};
+
+    std::vector<double> constantSteps = {0.0001, 0.0001};
+
+    double initialValue = 3655.04;
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
 
-    simulatedAnnealingParameterEstimation(model, observations, 500, 100, 0.9, 50, 0.1);
+    simulatedAnnealingParameterEstimation(model, stockCloses, 100, 20, 0.9, 75, 0.5);
 
-    std::cout << "\n\nParameter 1: " << model.parameters[0];
-    std::cout << "\nParameter 2: " << model.parameters[1]; 
+    std::cout << "\n\nDrift Est: " << model.parameters[0];
+    std::cout << "\nVolatility Est: " << model.parameters[1]; 
+
+    return model.parameters;
+}
+
+std::vector<std::vector<double>> driftVolFinder(){
+    std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
+
+    std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
+
+    stockCloses = y;
+
+    std::vector<double> returns;
+
+    for (int i = 1; i < stockCloses.size(); i++){
+        double baseReturn = stockCloses[i]/stockCloses[i-1];
+        returns.push_back(log(baseReturn));
+    }
+
+    double average = std::accumulate(returns.begin(), returns.end(),0.0) / returns.size();
+
+    std::cout << "\nAverage Log Return: " << average;
+
+    double variance = 0;
+
+    for(int i = 0; i < returns.size(); i++){
+        variance += ((returns[i] - average)*(returns[i]-average));
+    }
+    variance /= returns.size();
+
+    variance = sqrt(variance);    
+
+    double logAverage = std::accumulate(returns.begin(), returns.end(),0.0) / returns.size();
+
+    std::cout << "\nVolatility: " << variance;
+    std::cout << "\nDrift: " << logAverage;
+
+    std::vector<double> parameters = {logAverage, variance};
+    std::vector<double> times = {};
+
+    for(int i = 0; i < stockCloses.size(); i++){
+        times.push_back(i);
+    }
+
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, 3655.04, times, parameters);
+
+    std::vector<double> approximation = averageEulerMaruyama(model, 500);
+
+    std::vector<std::vector<double>> lines = {approximation, stockCloses};
+
+    return lines;
 }
 
 int main(){
-    std::vector<double> stockRows = csvColumnToVector("StockData/SPX_Post61.csv", 0);
+    std::vector<double> parameters = simulatedAnnealingTest();
+    std::vector<std::vector<double>> lines = driftVolFinder();
 
-    for(int i = 0; i < stockRows.size(); i ++){
-        std::cout << "\n" << stockRows[i];
+    std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
+
+    std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
+
+    stockCloses = y;
+
+    std::vector<double> times = {};
+
+    for(int i = 0; i < stockCloses.size(); i++){
+        times.push_back(i);
     }
+
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, 3655.04, times, parameters);
+
+    std::vector<double> newApproximation = averageEulerMaruyama(model, 500);
+
+    lines.push_back(newApproximation);
+
+    std::cout << "\nActual Approximation RMS: " << rmse(lines[1], lines[0]);
+    std::cout << "\nCombinatorial RMS: " << rmse(lines[1], newApproximation);
+
+    multiVectorToCSV(lines, "output.csv");
 }

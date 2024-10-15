@@ -1,5 +1,4 @@
 #include "fileReader.hpp"
-#include "csv.h"
 #include <vector>
 #include <string>
 #include <filesystem>
@@ -38,8 +37,6 @@ std::vector<double> csvColumnToVector(std::string fileName, int column, int rows
     }
 
     file.close();
-
-    std::cout << "\nSize: " << data.size();
 
     return data;
 }
