@@ -11,10 +11,10 @@ extern Xoshiro256plus randomGenerator;
 
 class randomPathMaker{
     private:
-    double inv_normal_cdf(double);
+    static double inv_normal_cdf(double);
     public:
     randomPathMaker();
-    double dW(double);
+    static double dW(double);
     std::vector<double> makePath(double intervalStart, double intervalEnd, double timeStep);
     std::vector<std::vector<double>> makeMultiplePaths(double intervalStart, double intervalEnd, double timeStep, int numPaths);
     std::vector<std::vector<double>> makeCorrelatedPaths(double, double, double, double);

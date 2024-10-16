@@ -38,7 +38,7 @@ double alphaFunction(double value, double time, std::vector<double> parameters){
 }
 
 double betaFunction(double value, double time, std::vector<double> parameters){
-    return (parameters[1]*value);
+    return (parameters[0]*value);
 }
 
 std::vector<double> eulerMaruyamaTest(int numSims){
@@ -50,7 +50,7 @@ std::vector<double> eulerMaruyamaTest(int numSims){
 
     double timeDiscretization = pow(2, -8);
 
-    std::vector<double> constants = {0.05, 0.2};
+    std::vector<std::vector<double>> constants = {{0.05}, {0.2}};
 
     double initialValue = 5;
 
@@ -129,7 +129,7 @@ void parameterNeighborTest(){
     std::cout << "\nTime taken: " << ms_double.count()/1000;
 }
 
-std::vector<double> simulatedAnnealingTest(){
+std::vector<std::vector<double>> simulatedAnnealingTest(){
     std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
 
     std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
@@ -142,20 +142,20 @@ std::vector<double> simulatedAnnealingTest(){
         times.push_back(i);
     }
 
-    std::vector<double> constants = {0, 0};
+    std::vector<std::vector<double>> constants = {{0}, {0}};
 
-    std::vector<std::vector<double>> constantLimits = {{0,2},{0,2}};
+    std::vector<std::vector<std::vector<double>>> constantLimits = {{{0,2}},{{0,2}}};
 
-    std::vector<double> constantSteps = {0.0001, 0.0001};
+    std::vector<std::vector<double>> constantSteps = {{0.0001}, {0.0001}};
 
     double initialValue = 3655.04;
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
 
-    simulatedAnnealingParameterEstimation(model, stockCloses, 100, 20, 0.9, 75, 0.5);
+    simulatedAnnealingParameterEstimation(model, stockCloses, 100, 20, 0.9, 150, 5);
 
-    std::cout << "\n\nDrift Est: " << model.parameters[0];
-    std::cout << "\nVolatility Est: " << model.parameters[1]; 
+    std::cout << "\n\nDrift Est: " << model.parameters[0][0];
+    std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
 
     return model.parameters;
 }
@@ -192,7 +192,7 @@ std::vector<std::vector<double>> driftVolFinder(){
     std::cout << "\nVolatility: " << variance;
     std::cout << "\nDrift: " << logAverage;
 
-    std::vector<double> parameters = {logAverage, variance};
+    std::vector<std::vector<double>> parameters = {{logAverage}, {variance}};
     std::vector<double> times = {};
 
     for(int i = 0; i < stockCloses.size(); i++){
@@ -208,8 +208,8 @@ std::vector<std::vector<double>> driftVolFinder(){
     return lines;
 }
 
-int main(){
-    std::vector<double> parameters = simulatedAnnealingTest();
+void SAComparison(){
+    std::vector<std::vector<double>> parameters = simulatedAnnealingTest();
     std::vector<std::vector<double>> lines = driftVolFinder();
 
     std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
@@ -234,4 +234,8 @@ int main(){
     std::cout << "\nCombinatorial RMS: " << rmse(lines[1], newApproximation);
 
     multiVectorToCSV(lines, "output.csv");
+}
+
+int main(){
+    SAComparison();
 }

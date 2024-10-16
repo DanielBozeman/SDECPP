@@ -2,7 +2,7 @@
 #include <vector>
 #include "RandomUtils.hpp"
 
-stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<double> constants, std::vector<std::vector<double>> constantLimits, std::vector<double> stepSizes){
+stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     alphaFunction = function1;
     betaFunction = function2;
     initialValue = startValue;
@@ -12,7 +12,7 @@ stochasticModel::stochasticModel(stochastic_function function1, stochastic_funct
     parameterSteps = stepSizes;
 }
 
-void stochasticModel::setParameters(std::vector<double> constants){
+void stochasticModel::setParameters(std::vector<std::vector<double>> constants){
     parameters = constants;
 }
 
@@ -33,7 +33,7 @@ std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> bro
         double prevValue = approximation[i-1];
         double prevTime = model.timeInterval[i-1];
         double dW = brownianPath[i] - brownianPath[i-1];
-        approximation.push_back((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters)*dt + model.betaFunction(prevValue, prevTime, model.parameters)*dW ));
+        approximation.push_back((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
     }
 
     return approximation;
@@ -87,7 +87,7 @@ std::vector<std::vector<double>> multipleEulerMaruyama(stochasticModel model, in
             prevValue = approximation[j-1];
             prevTime = model.timeInterval[j-1];
             dW = brownianPaths[i][j] - brownianPaths[i][j-1];
-            approximation.push_back((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters)*dt + model.betaFunction(prevValue, prevTime, model.parameters)*dW ));
+            approximation.push_back((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
         }
 
         approximations.push_back(approximation);

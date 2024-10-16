@@ -13,11 +13,11 @@ class stochasticModel{
     stochastic_function betaFunction;
     double initialValue;
     std::vector<double> timeInterval;
-    std::vector<double> parameters;
-    std::vector<std::vector<double>> parameterLimits;
-    std::vector<double> parameterSteps;
-    stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<double> constants, std::vector<std::vector<double>> constantLimits = {}, std::vector<double> stepSizes = {});  
-    void setParameters(std::vector<double> constants);  
+    std::vector<std::vector<double>> parameters;
+    std::vector<std::vector<std::vector<double>>> parameterLimits;
+    std::vector<std::vector<double>> parameterSteps;
+    stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
+    void setParameters(std::vector<std::vector<double>> constants);  
 };
 
 std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath = {});

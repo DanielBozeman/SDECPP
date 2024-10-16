@@ -70,18 +70,20 @@ double acceptanceProbability(double newState, double oldState, double temperatur
 
 
 
-void parameterNeighbor(std::vector<double>& currentParameters, std::vector<std::vector<double>> parameterLimits, std::vector<double> parameterStepSize){
+std::vector<double> parameterNeighbor(std::vector<double> currentParameters, std::vector<std::vector<double>> parameterLimits, std::vector<double> parameterStepSize){
 
     int upDown = (randomGenerator.next()%2)*2 - 1;
 
     int choice = randomGenerator.next() % currentParameters.size();
 
-    currentParameters[choice] += upDown * parameterStepSize[choice];
+    //currentParameters[choice] += upDown * parameterStepSize[choice];
+
+    currentParameters[choice] += randomPathMaker::dW(parameterStepSize[choice]);
 
     currentParameters[choice] = currentParameters[choice] < parameterLimits[choice][0] ? parameterLimits[choice][0] : currentParameters[choice];
     currentParameters[choice] = currentParameters[choice] > parameterLimits[choice][1] ? parameterLimits[choice][1] : currentParameters[choice];
 
-    return;
+    return currentParameters;
 }
 
 void simulatedAnnealingParameterEstimation(stochasticModel& model, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit){
@@ -96,25 +98,22 @@ void simulatedAnnealingParameterEstimation(stochasticModel& model, std::vector<d
 
     stochasticModel currentModel = model;
     stochasticModel bestModel = model;
+    stochasticModel newModel = model;
 
     double bestRMS = std::numeric_limits<double>::infinity();
 
     while (temperature > temperatureLimit){
         for(int i = 0; i < stepsAtTemp; i++){
-            if (rmsMap.find(currentModel.parameters) != rmsMap.end())
-            {
-                RMS = rmsMap[currentModel.parameters];
-            }else{
-                curApproximation = averageEulerMaruyama(currentModel, numSimulations);
-            
-                RMS = rmse(observations, curApproximation);
-            }
-            
-            prob = acceptanceProbability(RMS, oldRMS, temperature);
 
+            curApproximation = averageEulerMaruyama(newModel, numSimulations);
+            
+            RMS = rmse(observations, curApproximation);
+
+            prob = acceptanceProbability(RMS, oldRMS, temperature);
 
             if (prob > randomGenerator.d01()){
                 oldRMS = RMS;
+                currentModel = newModel;
                 std::cout << "\nNew RMS: " << RMS;
             }
 
@@ -123,7 +122,7 @@ void simulatedAnnealingParameterEstimation(stochasticModel& model, std::vector<d
                 bestRMS = RMS;
             }
 
-            parameterNeighbor(currentModel.parameters, currentModel.parameterLimits, currentModel.parameterSteps);       
+            newModel.parameters[0] = parameterNeighbor(currentModel.parameters[0], currentModel.parameterLimits[0], currentModel.parameterSteps[0]);       
         }
         temperature *= coolingRate;
         std::cout << "\nTemperature: " << temperature;
