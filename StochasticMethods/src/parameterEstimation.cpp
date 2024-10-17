@@ -86,7 +86,7 @@ std::vector<double> parameterNeighbor(std::vector<double> currentParameters, std
     return currentParameters;
 }
 
-void simulatedAnnealingParameterEstimation(stochasticModel& model, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit){
+std::vector<double> simulatedAnnealingParameterEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit, costFunction cost){
     double temperature = startingTemperature;
 
     std::vector<double> curApproximation;
@@ -107,14 +107,14 @@ void simulatedAnnealingParameterEstimation(stochasticModel& model, std::vector<d
 
             curApproximation = averageEulerMaruyama(newModel, numSimulations);
             
-            RMS = rmse(observations, curApproximation);
+            RMS = cost(observations, curApproximation);
 
             prob = acceptanceProbability(RMS, oldRMS, temperature);
 
             if (prob > randomGenerator.d01()){
                 oldRMS = RMS;
                 currentModel = newModel;
-                std::cout << "\nNew RMS: " << RMS;
+                //std::cout << "\nNew RMS: " << RMS;
             }
 
             if(RMS < bestRMS){
@@ -122,13 +122,15 @@ void simulatedAnnealingParameterEstimation(stochasticModel& model, std::vector<d
                 bestRMS = RMS;
             }
 
-            newModel.parameters[0] = parameterNeighbor(currentModel.parameters[0], currentModel.parameterLimits[0], currentModel.parameterSteps[0]);       
+            newModel.parameters[parameterSet] = parameterNeighbor(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet], currentModel.parameterSteps[parameterSet]);       
         }
         temperature *= coolingRate;
         std::cout << "\nTemperature: " << temperature;
     }
 
     model = bestModel;
+
+    return model.parameters[parameterSet];
 }
 
 
