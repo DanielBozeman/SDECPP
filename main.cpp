@@ -150,9 +150,16 @@ std::vector<std::vector<double>> simulatedAnnealingTest(){
 
     double initialValue = 3655.04;
 
-    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
+    stochasticModel baseModel = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
+    
+    stochasticModel model = baseModel;
 
-    simulatedAnnealingParameterEstimation(model, stockCloses, 100, 20, 0.9, 150, 5);
+    model.parameters[1] = simulatedAnnealingParameterEstimation(baseModel, 1, stockCloses, 100, 20, 0.9, 150, 5, rmse);
+    
+    std::cout << "\n\nDrift Est: " << baseModel.parameters[0][0];
+    std::cout << "\nVolatility Est: " << baseModel.parameters[1][0];
+    
+    model.parameters[0] = simulatedAnnealingParameterEstimation(baseModel, 0, stockCloses, 100, 20, 0.9, 150, 5, rmse);
 
     std::cout << "\n\nDrift Est: " << model.parameters[0][0];
     std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
@@ -175,8 +182,6 @@ std::vector<std::vector<double>> driftVolFinder(){
     }
 
     double average = std::accumulate(returns.begin(), returns.end(),0.0) / returns.size();
-
-    std::cout << "\nAverage Log Return: " << average;
 
     double variance = 0;
 
@@ -201,11 +206,61 @@ std::vector<std::vector<double>> driftVolFinder(){
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, 3655.04, times, parameters);
 
-    std::vector<double> approximation = averageEulerMaruyama(model, 500);
+    std::vector<double> approximation = averageEulerMaruyama(model, 1500);
 
     std::vector<std::vector<double>> lines = {approximation, stockCloses};
 
     return lines;
+}
+
+void varianceViewer(){
+    std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
+
+    std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
+
+    stockCloses = y;
+
+    std::vector<double> returns;
+
+    for (int i = 1; i < stockCloses.size(); i++){
+        double baseReturn = stockCloses[i]/stockCloses[i-1];
+        returns.push_back(log(baseReturn));
+    }
+
+    double average = std::accumulate(returns.begin(), returns.end(),0.0) / returns.size();
+
+    double variance = 0;
+
+    for(int i = 0; i < returns.size(); i++){
+        variance += ((returns[i] - average)*(returns[i]-average));
+    }
+    variance /= returns.size();
+
+    variance = sqrt(variance);   
+
+    double logAverage = std::accumulate(returns.begin(), returns.end(),0.0) / returns.size();
+
+    std::cout << "\nVolatility: " << variance;
+    std::cout << "\nDrift: " << logAverage;
+
+    //std::vector<std::vector<double>> parameters = {{logAverage}, {variance}};
+    std::vector<std::vector<double>> parameters = {{logAverage}, {0.005}};
+    std::vector<double> times = {};
+
+    for(int i = 0; i < stockCloses.size(); i++){
+        times.push_back(i);
+    }
+
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, 3655.04, times, parameters);
+
+    std::vector<std::vector<double>> trajectories = multipleEulerMaruyama(model, 1000);
+
+
+    trajectories.push_back(stockCloses);
+
+    multiVectorToCSV(trajectories, "output.csv");
+
+    return;
 }
 
 void SAComparison(){
@@ -237,5 +292,6 @@ void SAComparison(){
 }
 
 int main(){
-    SAComparison();
+    //SAComparison();
+    varianceViewer();
 }
