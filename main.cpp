@@ -96,9 +96,6 @@ void rmseTest(){
     std::vector<double> actual = {0,3,5,6};
     std::vector<double> prediction = {0,0,0,0};
 
-    double rms = rmse(actual, prediction);
-
-    std::cout << "\n RMSE is " << rms;
 }
 
 void parameterNeighborTest(){
@@ -154,12 +151,9 @@ std::vector<std::vector<double>> simulatedAnnealingTest(){
     
     stochasticModel model = baseModel;
 
-    model.parameters[1] = simulatedAnnealingParameterEstimation(baseModel, 1, stockCloses, 100, 20, 0.9, 150, 5, rmse);
+    model.parameters[1] = simulatedAnnealingParameterEstimation(baseModel, 1, stockCloses, 100, 20, 0.9, 150, 5, multiVectorRMSE);
     
-    std::cout << "\n\nDrift Est: " << baseModel.parameters[0][0];
-    std::cout << "\nVolatility Est: " << baseModel.parameters[1][0];
-    
-    model.parameters[0] = simulatedAnnealingParameterEstimation(baseModel, 0, stockCloses, 100, 20, 0.9, 150, 5, rmse);
+    model.parameters[0] = simulatedAnnealingParameterEstimation(baseModel, 0, stockCloses, 100, 20, 0.9, 150, 5, multiVectorRMSE);
 
     std::cout << "\n\nDrift Est: " << model.parameters[0][0];
     std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
@@ -285,13 +279,10 @@ void SAComparison(){
 
     lines.push_back(newApproximation);
 
-    std::cout << "\nActual Approximation RMS: " << rmse(lines[1], lines[0]);
-    std::cout << "\nCombinatorial RMS: " << rmse(lines[1], newApproximation);
-
     multiVectorToCSV(lines, "output.csv");
 }
 
 int main(){
-    //SAComparison();
-    varianceViewer();
+    SAComparison();
+    //varianceViewer();
 }

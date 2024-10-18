@@ -9,32 +9,8 @@
 #include <unordered_map>
 #include <limits>
 
-struct KeyHasher{
-    static int GetHashCodeForBytes(const char * bytes, int numBytes)
-        {
-        unsigned long h = 0, g;
-        for (int i=0; i<numBytes; i++)
-        {
-            h = ( h << 4 ) + bytes[i];
-            if (g = h & 0xF0000000L) {h ^= g >> 24;}
-            h &= ~g;
-        }
-        return h;
-        }
-        static int GetHashForDouble(double v)
-{
-   return GetHashCodeForBytes((const char *)&v, sizeof(v));
-}
 
-std::size_t operator()(std::vector<double> const& vec) const
-{
-   int ret = 0;
-   for (int i=0; i<vec.size(); i++) ret += ((i+1)*(GetHashForDouble(vec[i])));
-   return ret;
-}
-};
-
-double rmse(std::vector<double> actual, std::vector<double> prediction){
+double multiVectorRMSE(std::vector<std::vector<double>> simulations, std::vector<double> actual){
 
     auto squareError = [](double a, double b) {
         auto e = a-b;
@@ -42,9 +18,27 @@ double rmse(std::vector<double> actual, std::vector<double> prediction){
     };
     double sum = 0;
 
+    std::vector<double> average = {};
+
+    average.reserve(simulations[0].size());
+
+    double averageVal;
+
+    for(int i = 0; i < simulations[0].size(); i++){
+        averageVal = 0;
+        for(int j = 0; j < simulations.size(); j++){
+            averageVal += simulations[j][i];
+        }
+        average.push_back(averageVal);
+    }
+
+    for(int i = 0; i < average.size(); i++){
+        average[i] /= simulations.size();
+    }
+
     try{
         for(int i = 0; i < actual.size(); i++){
-            sum += ((actual[i] - prediction[i])*(actual[i] - prediction[i]));
+            sum += ((actual[i] - average[i])*(actual[i] - average[i]));
         }
         if(sum < 0){
             throw std::runtime_error("NOT A NUMBER REACHED!");
@@ -89,12 +83,10 @@ std::vector<double> parameterNeighbor(std::vector<double> currentParameters, std
 std::vector<double> simulatedAnnealingParameterEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit, costFunction cost){
     double temperature = startingTemperature;
 
-    std::vector<double> curApproximation;
+    std::vector<std::vector<double>> curApproximation;
     double RMS;
     double prob;
     double oldRMS = std::numeric_limits<double>::infinity();
-
-    std::unordered_map<std::vector<double>, double, KeyHasher> rmsMap;
 
     stochasticModel currentModel = model;
     stochasticModel bestModel = model;
@@ -105,9 +97,9 @@ std::vector<double> simulatedAnnealingParameterEstimation(stochasticModel model,
     while (temperature > temperatureLimit){
         for(int i = 0; i < stepsAtTemp; i++){
 
-            curApproximation = averageEulerMaruyama(newModel, numSimulations);
+            curApproximation = multipleEulerMaruyama(newModel, numSimulations);
             
-            RMS = cost(observations, curApproximation);
+            RMS = cost(curApproximation, observations);
 
             prob = acceptanceProbability(RMS, oldRMS, temperature);
 
