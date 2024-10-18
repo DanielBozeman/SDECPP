@@ -151,8 +151,6 @@ std::vector<std::vector<double>> simulatedAnnealingTest(){
     
     stochasticModel model = baseModel;
 
-    model.parameters[1] = simulatedAnnealingParameterEstimation(baseModel, 1, stockCloses, 100, 20, 0.9, 150, 5, multiVectorRMSE);
-    
     model.parameters[0] = simulatedAnnealingParameterEstimation(baseModel, 0, stockCloses, 100, 20, 0.9, 150, 5, multiVectorRMSE);
 
     std::cout << "\n\nDrift Est: " << model.parameters[0][0];

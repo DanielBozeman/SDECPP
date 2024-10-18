@@ -9,6 +9,25 @@
 #include <unordered_map>
 #include <limits>
 
+double rmse(std::vector<double> simulation, std::vector<double> actual){
+    double sum = 0;
+
+    try{
+        for(int i = 0; i < actual.size(); i++){
+            sum += ((actual[i] - simulation[i])*(actual[i] - simulation[i]));
+        }
+        if(sum < 0){
+            throw std::runtime_error("NOT A NUMBER REACHED!");
+        }
+    }
+    catch(const std::runtime_error& e){
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    
+    double rmse = sqrt((sum / actual.size())); 
+
+    return rmse;
+}
 
 double multiVectorRMSE(std::vector<std::vector<double>> simulations, std::vector<double> actual){
 
@@ -16,7 +35,6 @@ double multiVectorRMSE(std::vector<std::vector<double>> simulations, std::vector
         auto e = a-b;
         return e*e;
     };
-    double sum = 0;
 
     std::vector<double> average = {};
 
@@ -36,21 +54,7 @@ double multiVectorRMSE(std::vector<std::vector<double>> simulations, std::vector
         average[i] /= simulations.size();
     }
 
-    try{
-        for(int i = 0; i < actual.size(); i++){
-            sum += ((actual[i] - average[i])*(actual[i] - average[i]));
-        }
-        if(sum < 0){
-            throw std::runtime_error("NOT A NUMBER REACHED!");
-        }
-    }
-    catch(const std::runtime_error& e){
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-    
-    double rmse = sqrt((sum / actual.size())); 
-
-    return rmse;
+    return rmse(average, actual);
 }
 
 double acceptanceProbability(double newState, double oldState, double temperature){
