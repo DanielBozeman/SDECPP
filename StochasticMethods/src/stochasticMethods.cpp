@@ -2,6 +2,10 @@
 #include <vector>
 #include "RandomUtils.hpp"
 
+double zeroFunction(double value, double time, std::vector<double> parameters){
+    return 0;
+}
+
 stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     alphaFunction = function1;
     betaFunction = function2;
