@@ -20,6 +20,8 @@ class stochasticModel{
     void setParameters(std::vector<std::vector<double>> constants);  
 };
 
+double zeroFunction(double value, double time, std::vector<double> parameters);
+
 std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath = {});
 
 std::vector<double> eulerMaruyama(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters, std::vector<double> brownianPath = {});

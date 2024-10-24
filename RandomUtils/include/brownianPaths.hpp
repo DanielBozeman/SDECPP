@@ -11,7 +11,6 @@ extern Xoshiro256plus randomGenerator;
 
 class randomPathMaker{
     private:
-    static double inv_normal_cdf(double);
     public:
     randomPathMaker();
     static double dW(double);

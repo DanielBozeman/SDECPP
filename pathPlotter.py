@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import norm
 import csv
 
 
@@ -19,6 +20,7 @@ def standardPlotter():
         values = df[column]
 
         plt.plot(values)
+        #plt.hist(values)
 
     plt.show()
 
@@ -80,10 +82,70 @@ def multiGrayAveragePlot():
 
     return
 
+def twoVectorHist():
+    df = pd.read_csv("build/output.csv", index_col=False)
+
+    times = df.columns[0]
+
+    for i in range(len(df.columns)-1):
+    #for i in range(5):
+        values = df.iloc[:,i]
+
+        plt.hist(values, (40*(i+1)), alpha=0.5)
+
+    plt.show()
+
+    return
+
+def twoVectorAgainst():
+    df = pd.read_csv("build/output.csv", index_col=False)
+
+    print(df.shape)
+
+    print(df.head)
+
+    times = df.iloc[0]
+
+    print(times)
+    
+    plt.plot(times)
+
+    plt.show()
+
+    return
+
+def normalPlotter():
+    x = np.linspace(-200, 200, 100)
+
+    df = pd.read_csv("build/output.csv", index_col=False, header = None)
+
+    for i in range(len(df.columns)):
+
+        values = df.iloc[:,i]
+        
+        print(values)
+
+        mean = values[0]
+        variance = values[1]
+
+        # Calculate y values using the probability density function (PDF)
+        y = norm.pdf(x, mean, variance)  # Mean = 0, Standard Deviation = 1
+
+        # Plot the curve
+        plt.plot(x, y)
+
+    plt.title("Normal Distribution Curves")
+    plt.xlabel("x")
+    plt.ylabel("Probability Density")
+    plt.show()
+
 if __name__ == "__main__":
-    multiGrayLastFull()
+    #multiGrayLastFull()
     #standardPlotter()
     #multiGrayAveragePlot()
+    #twoVectorAgainst()
+    #twoVectorHist()
+    normalPlotter()
 
     
     
