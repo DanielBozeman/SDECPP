@@ -3,6 +3,7 @@
 #include "RandomUtils.hpp"
 #include <algorithm>
 #include <math.h>
+#include <cmath>
 #include <vector>
 #include <numeric>
 #include <iostream>
@@ -10,7 +11,9 @@
 #include <unordered_map>
 #include <limits>
 
-double rmse(std::vector<double> simulation, std::vector<double> actual){
+//Root mean square error between two vectors
+//This can probably be changed to just MSE
+double rmse(std::vector<double>& simulation, std::vector<double>& actual){
     double sum = 0;
 
     try{
@@ -30,7 +33,9 @@ double rmse(std::vector<double> simulation, std::vector<double> actual){
     return rmse;
 }
 
-double multiVectorRMSE(std::vector<std::vector<double>> simulations, std::vector<double> actual){
+//Root mean square error between the average of a bunch of simuations and a vector of observations
+//Probably could also be swapped out with MSE
+double multiVectorRMSE(std::vector<std::vector<double>>& simulations, std::vector<double>& actual){
 
     auto squareError = [](double a, double b) {
         auto e = a-b;
@@ -58,52 +63,40 @@ double multiVectorRMSE(std::vector<std::vector<double>> simulations, std::vector
     return rmse(average, actual);
 }
 
-double findMax(std::vector<double> dataVector){
-    
-    double maximum = 0;
+//Finds the set of returns of a set of simulated paths
+//Return is organized as the first coordinate being the time and second being the particular return returns[timeStep][return]
+std::vector<std::vector<double>> findReturns(std::vector<std::vector<double>>& simulations){
 
-    for(int i = 0; i < dataVector.size(); i++){
-        if(abs(dataVector[i]) > maximum){
-            maximum = abs(dataVector[i]);
-        }
-    }
-
-    return maximum;
-}
-
-double averageLogReturnComparison(std::vector<std::vector<double>> simulations, std::vector<double> actual){
-
-    std::vector<std::vector<double>> returns;
+    std::vector<std::vector<double>> simReturns = {};
 
     for(int i = 1; i < simulations[0].size(); i++){
-        returns.push_back({});
+        simReturns.push_back({});
         for(int j = 0; j < simulations.size(); j++){
-            returns[i-1].push_back(log(simulations[j][i]/simulations[j][i-1]));
+            simReturns[i-1].push_back(simulations[j][i] - simulations[j][i-1]);
         }
     }
 
-    double logDifference = 0;
-
-    std::vector<double> logReturns = {};
-
-    logReturns.reserve(actual.size() - 1);
-
-    for(int i = 1; i < actual.size(); i++){
-        logReturns.push_back(log(actual[i]/actual[i-1]));\
-    }
- 
-    double difference = 0;
-
-    for(int i = 0; i < logReturns.size(); i++){
-        difference = abs(logReturns[i] - findMax(returns[i]));
-
-        logDifference += difference;
-    }
-
-    return logDifference;
+    return simReturns;
 }
 
-double sampleMean(std::vector<double> observations){
+//Returns the returns of a set of data at each timestep, but this time in absolute value
+//Can be useful for sorting and may have better statistical properties
+std::vector<std::vector<double>> findAbsReturns(std::vector<std::vector<double>>& simulations){
+
+    std::vector<std::vector<double>> simReturns = {};
+
+    for(int i = 1; i < simulations[0].size(); i++){
+        simReturns.push_back({});
+        for(int j = 0; j < simulations.size(); j++){
+            simReturns[i-1].push_back(abs(simulations[j][i] - simulations[j][i-1]));
+        }
+    }
+
+    return simReturns;
+}
+
+//Calculates the sample mean of a set of data
+double sampleMean(std::vector<double>& observations){
     double mean = 0;
 
     for(int i = 0; i < observations.size(); i++){
@@ -115,7 +108,8 @@ double sampleMean(std::vector<double> observations){
     return mean;
 }
 
-double sampleVariance(std::vector<double> observations){
+//Calculates the sample variance of a set of data
+double sampleVariance(std::vector<double>& observations){
 
     double mean = sampleMean(observations);
 
@@ -130,15 +124,19 @@ double sampleVariance(std::vector<double> observations){
     return variance;
 }
 
-double normalPDF(double observation, double mean, double variance){
-    double pdf = 1/sqrt(2 * 3.1415926 * variance);
+//Calculates the pdf of a normal distribution with given mean and variance at a given datapoint
+long double normalPDF(double& observation, double& mean, double& variance){
+    long double pdf = 1/sqrt(2 * 3.1415926 * variance);
 
     pdf *= exp(-1 * (((observation - mean)*(observation - mean))/(2 * variance)));
+
+    //std::cout << "\nPDF: " << pdf;
 
     return pdf;
 }
 
-double normalCDF(double observation, double mean, double variance){
+//Calculates the cdf of a normal distribution with given mean and variance at a given datapoint
+double normalCDF(double& observation, double& mean, double& variance){
 
     double value = 0;
     if(observation > mean){
@@ -156,8 +154,15 @@ double normalCDF(double observation, double mean, double variance){
     return cdf;
 }
 
-double returnComparison(std::vector<std::vector<double>> simulations, std::vector<double> actual){
-    std::vector<std::vector<double>> simReturns;
+//COST FUNCTION
+//Compares the returns of the given data against a set of simulations
+//Should get smaller as the simulated variance gets more accurate
+//Still in progress
+double returnComparison(std::vector<std::vector<double>>& simulations, std::vector<double>& actual){
+
+    double percentage = 0.1;
+
+    std::vector<std::vector<double>> simReturns = {};
 
     for(int i = 1; i < simulations[0].size(); i++){
         simReturns.push_back({});
@@ -166,37 +171,38 @@ double returnComparison(std::vector<std::vector<double>> simulations, std::vecto
         }
     }
 
-    std::vector<double> trueReturns = {};
+    std::vector<std::vector<double>> trueReturns = {};
 
     trueReturns.reserve(actual.size() - 1);
 
     for(int i = 1; i < actual.size(); i++){
-        trueReturns.push_back(actual[i] - actual[i-1]);
+        trueReturns.push_back({abs(actual[i] - actual[i-1]), static_cast<double>(i-1)});
     }
 
-    double totalCost = 0;
+    std::sort(trueReturns.begin(), trueReturns.end(), std::greater<>());
 
-    double simMean = 0;
-    double simVariance = 0;
+    long double totalCost = 1;
 
-    simMean = sampleMean(simReturns[10]);
-    simVariance = sampleVariance(simReturns[10]);
+    for(int i = 0; i < (trueReturns.size()); i++){
+        //std::cout << "\nPos: " << trueReturns[i][1];
+        //std::cout << "\nReturn size: " << simReturns.size();
 
-    double pdf = normalPDF(trueReturns[10], simMean, simVariance);
+        double simMean = sampleMean(simReturns[trueReturns[i][1]]);
+        double simVariance = sampleVariance(simReturns[trueReturns[i][1]]);
 
-    for(int i = 0; i < trueReturns.size(); i++){
-         simMean = sampleMean(simReturns[i]);
-         simVariance = sampleVariance(simReturns[i]);
+        //std::cout << "\nVar: " << simVariance;
 
-         double pdf = normalPDF(trueReturns[i], simMean, simVariance);
+        long double pdf = normalPDF(trueReturns[i][0], simMean, simVariance);
 
-         totalCost -= pdf;
+        totalCost *= pdf;
     }
 
     return totalCost;
 }
 
+//Acceptance Probability for simulated annealing
 double acceptanceProbability(double newState, double oldState, double temperature){
+    //std::cout << "\nNew: " << newState << "    Old: " << oldState;
     if (newState < oldState){
         return 1;
     }
@@ -205,6 +211,7 @@ double acceptanceProbability(double newState, double oldState, double temperatur
     }
 }
 
+//Finds a random neighbor of a parameter
 std::vector<double> parameterNeighbor(std::vector<double> currentParameters, std::vector<std::vector<double>> parameterLimits, std::vector<double> parameterStepSize){
 
     int upDown = (randomGenerator.next()%2)*2 - 1;
@@ -221,6 +228,7 @@ std::vector<double> parameterNeighbor(std::vector<double> currentParameters, std
     return currentParameters;
 }
 
+//Performs simulated annealing by changing a given parameter, tries to minimize the costFunction
 std::vector<double> simulatedAnnealingParameterEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit, costFunction cost){
     double temperature = startingTemperature;
 
@@ -241,7 +249,8 @@ std::vector<double> simulatedAnnealingParameterEstimation(stochasticModel model,
             curApproximation = multipleEulerMaruyama(newModel, numSimulations);
             
             RMS = cost(curApproximation, observations);
-            //std::cout << "\nCurrent Cost: " << RMS;
+            std::cout << "\nCurrent Var: " << newModel.parameters[1][0];
+            std::cout << "    Current Cost: " << RMS;
 
             prob = acceptanceProbability(RMS, oldRMS, temperature);
 

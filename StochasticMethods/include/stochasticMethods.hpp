@@ -3,7 +3,7 @@
 
 #include <vector>
 
-typedef double (*stochastic_function)(double, double, std::vector<double>);
+typedef double (*stochastic_function)(double&, double&, std::vector<double>&);
 
 class stochasticModel{
     private:
@@ -20,7 +20,7 @@ class stochasticModel{
     void setParameters(std::vector<std::vector<double>> constants);  
 };
 
-double zeroFunction(double value, double time, std::vector<double> parameters);
+double zeroFunction(double& value, double& time, std::vector<double>& parameters);
 
 std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath = {});
 

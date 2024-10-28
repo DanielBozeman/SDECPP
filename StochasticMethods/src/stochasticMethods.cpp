@@ -2,7 +2,7 @@
 #include <vector>
 #include "RandomUtils.hpp"
 
-double zeroFunction(double value, double time, std::vector<double> parameters){
+double zeroFunction(double& value, double& time, std::vector<double>& parameters){
     return 0;
 }
 

@@ -34,11 +34,11 @@ void brownianPathTester(){
     std::cout << "\nTime: " << ms_double.count()/1000;
 }
 
-double alphaFunction(double value, double time, std::vector<double> parameters){
+double alphaFunction(double& value, double& time, std::vector<double>& parameters){
     return (parameters[0]*value);
 }
 
-double betaFunction(double value, double time, std::vector<double> parameters){
+double betaFunction(double& value, double& time, std::vector<double>& parameters){
     return (parameters[0]*value);
 }
 
@@ -152,7 +152,7 @@ std::vector<std::vector<double>> simulatedAnnealingTest(){
 
     //model.parameters[0] = simulatedAnnealingParameterEstimation(model, 0, stockCloses, 100, 20, 0.9, 150, 5, multiVectorRMSE);
     model.parameters[0] = {0.000865574};
-    model.parameters[1] = simulatedAnnealingParameterEstimation(model, 1, stockCloses, 100, 20, 0.9, 150, 5, returnComparison);
+    model.parameters[1] = simulatedAnnealingParameterEstimation(model, 1, stockCloses, 5000, 20, 0.9, 150, 5, returnComparison);
 
     std::cout << "\n\nDrift Est: " << model.parameters[0][0];
     std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
@@ -281,83 +281,6 @@ void SAComparison(){
     multiVectorToCSV(lines, "output.csv");
 }
 
-void logDifferenceTest(){
-    std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
-
-    std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
-
-    stockCloses = y;
-
-    std::vector<double> returns;
-
-    for (int i = 1; i < stockCloses.size(); i++){
-        double baseReturn = stockCloses[i]/stockCloses[i-1];
-        returns.push_back(log(baseReturn));
-    }
-
-    double average = std::accumulate(returns.begin(), returns.end(),0.0) / returns.size();
-
-    double variance = 0;
-
-    for(int i = 0; i < returns.size(); i++){
-        variance += ((returns[i] - average)*(returns[i]-average));
-    }
-    variance /= returns.size();
-
-    variance = sqrt(variance);   
-
-    double logAverage = std::accumulate(returns.begin(), returns.end(),0.0) / returns.size();
-
-    std::cout << "\nVolatility: " << variance;
-    std::cout << "\nDrift: " << logAverage;
-
-    //std::vector<std::vector<double>> parameters = {{logAverage}, {variance}};
-    std::vector<std::vector<double>> parameters = {{logAverage}, {0.005}};
-    std::vector<double> times = {};
-
-    for(int i = 0; i < stockCloses.size(); i++){
-        times.push_back(i);
-    }
-
-    variance = variance - (0.0001*12);
-
-    std::vector<std::vector<double>> trajectories;
-
-    for(int i = 0; i < 25; i ++){
-
-        std::vector<std::vector<double>> parameters = {{logAverage}, {variance}};
-
-        stochasticModel model = stochasticModel(alphaFunction, betaFunction, 3655.04, times, parameters);
-
-        trajectories = multipleEulerMaruyama(model, 1000);
-
-        std::cout << "\nVariance: " << variance << "  Log Return Median Difference: " << averageLogReturnComparison(trajectories, stockCloses);
-
-        variance = variance + (0.0001);
-    }
-
-    trajectories.push_back(stockCloses);
-
-    multiVectorToCSV(trajectories, "output.csv");
-
-    return;
-
-}
-
-std::vector<double> findChangeAtPoint(std::vector<std::vector<double>> simulations, int n){
-
-    std::vector<std::vector<double>> simReturns = {};
-
-    for(int i = 1; i < simulations[0].size(); i++){
-        simReturns.push_back({});
-        for(int j = 0; j < simulations.size(); j++){
-            simReturns[i-1].push_back(simulations[j][i] - simulations[j][i-1]);
-        }
-    }
-
-    return simReturns[n];
-}
-
 void statsTests(){
 
     double simVariance = 0.005;
@@ -365,7 +288,7 @@ void statsTests(){
     double startValue = 3655.04;
     double drift = 0.000891396;
 
-    int timeLength = 200;
+    int timeLength = 500;
     std::vector<double> times = {};
 
     for(int i = 0; i < timeLength; i++){
@@ -378,27 +301,27 @@ void statsTests(){
     stochasticModel simModel = stochasticModel(zeroFunction, betaFunction, startValue, times, simConstants);
     stochasticModel obsModel = stochasticModel(zeroFunction, betaFunction, startValue, times, observationConstants);
     
-    std::vector<double> observations = eulerMaruyama(obsModel);
+    std::vector<double> observations = csvColumnToVector("StockData/SPX_Post61.csv", 6);
+
+    std::vector<double> y(observations.end() - 500, observations.end());
+
+    observations = y;
 
     std::vector<std::vector<double>> costs = {};
 
     std::vector<std::vector<double>> outReturns = {};
 
-    for(int i = 0; i < 10; i ++){
-
+    for(int i = 0; i < 50; i++){
         std::vector<std::vector<double>> sims = multipleEulerMaruyama(simModel, 5000);
 
-        std::vector<double> returnsAt10 = findChangeAtPoint(sims, 10);
+        double cost = returnComparison(sims, observations);
 
-        std::cout << "\nFor sigma=" << simModel.parameters[1][0] <<"     Sample Mean: " << sampleMean(returnsAt10) << "     Sample Sigma: " << sqrt(sampleVariance(returnsAt10));
+        std::cout << "\nVariance: " << simModel.parameters[1][0] <<  "    Cost: " << cost;
 
-        outReturns.push_back({sampleMean(returnsAt10), sqrt(sampleVariance(returnsAt10))});
-
-        simModel.parameters[1][0] += 0.002;
-
+        simModel.parameters[1][0] += 0.0002;
     }
 
-    multiVectorToCSV(outReturns, "output.csv");
+    //multiVectorToCSV(outReturns, "output.csv");
 
     //multiVectorToCSV(sims, "output.csv");
 
@@ -419,10 +342,10 @@ void stats(){
 }
 
 int main(){
-    //SAComparison();
+    SAComparison();
     //varianceViewer();
     //logDifferenceTest();
-    statsTests();
+    //statsTests();
     //driftVolFinder();
     //stats();
 }
