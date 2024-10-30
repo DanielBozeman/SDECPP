@@ -99,34 +99,6 @@ void rmseTest(){
 
 }
 
-void parameterNeighborTest(){
-    std::vector<double> parameters = {0, 5, 7};
-    std::vector<std::vector<double>> parameterLimits = {{-2,0},{0,20},{-20,8}};
-    std::vector<double> parameterSteps = {0.1, 1, 0.001};
-
-    auto t1 = std::chrono::high_resolution_clock::now();
-
-    std::cout << "\nStarting test";
-
-    for(int i = 0; i < 1000; i++){
-        //std::cout << "\n";
-        //for(int j = 0; j < parameters.size(); j++){
-            //std::cout << parameters[j] << " ";
-        //}
-        parameterNeighbor(parameters, parameterLimits, parameterSteps);
-    }
-
-    auto t2 = std::chrono::high_resolution_clock::now();
-
-    /* Getting number of milliseconds as an integer. */
-    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-
-    /* Getting number of milliseconds as a double. */
-    std::chrono::duration<double, std::milli> ms_double = t2 - t1;
-
-    std::cout << "\nTime taken: " << ms_double.count()/1000;
-}
-
 std::vector<std::vector<double>> simulatedAnnealingTest(){
     std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
 
@@ -144,18 +116,33 @@ std::vector<std::vector<double>> simulatedAnnealingTest(){
 
     std::vector<std::vector<std::vector<double>>> constantLimits = {{{0,2}},{{0.0001,2}}};
 
-    std::vector<std::vector<double>> constantSteps = {{0.0001}, {0.0001}};
+    std::vector<std::vector<double>> constantSteps = {{0.01}, {0.01}};
 
     double initialValue = 3655.04;
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
 
-    //model.parameters[0] = simulatedAnnealingParameterEstimation(model, 0, stockCloses, 100, 20, 0.9, 150, 5, multiVectorRMSE);
-    model.parameters[0] = {0.000865574};
-    model.parameters[1] = simulatedAnnealingParameterEstimation(model, 1, stockCloses, 5000, 20, 0.9, 150, 5, returnComparison);
+    for(int i = 0; i < 3; i++){
+        std::cout << "\nStarting Drift Estimation";
+        model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 150, 1, multiVectorRMSE);
+        //model.parameters[0] = {0.000865574};
+        std::cout << "\nDrift Est: " << model.parameters[0][0];
+        std::cout << "\nStarting Vol Estimation";
+        model.betaFunction = betaFunction;
+        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 150, 5, returnComparison);
+        std::cout << "\n\n For Run " << i;
+        std::cout << "\nDrift Est: " << model.parameters[0][0];
+        std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
 
-    std::cout << "\n\nDrift Est: " << model.parameters[0][0];
-    std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
+        for(int j = 0; j < constantSteps.size(); j++){
+            for(int k = 0; k < constantSteps[j].size(); k++){
+                constantSteps[j][k] *= 0.01;
+            }
+        }
+
+        model.parameterSteps = constantSteps;
+    }
+    
 
     return model.parameters;
 }
@@ -312,7 +299,7 @@ void statsTests(){
     std::vector<std::vector<double>> outReturns = {};
 
     for(int i = 0; i < 50; i++){
-        std::vector<std::vector<double>> sims = multipleEulerMaruyama(simModel, 5000);
+        std::vector<std::vector<double>> sims = multipleEulerMaruyama(simModel, 500);
 
         double cost = returnComparison(sims, observations);
 
