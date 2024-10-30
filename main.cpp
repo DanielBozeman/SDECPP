@@ -123,13 +123,17 @@ std::vector<std::vector<double>> simulatedAnnealingTest(){
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
 
     for(int i = 0; i < 3; i++){
+
         std::cout << "\nStarting Drift Estimation";
         model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 150, 1, multiVectorRMSE);
+        
         //model.parameters[0] = {0.000865574};
         std::cout << "\nDrift Est: " << model.parameters[0][0];
         std::cout << "\nStarting Vol Estimation";
+
         model.betaFunction = betaFunction;
-        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 150, 5, returnComparison);
+        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 150, 10, returnComparison);
+        
         std::cout << "\n\n For Run " << i;
         std::cout << "\nDrift Est: " << model.parameters[0][0];
         std::cout << "\nVolatility Est: " << model.parameters[1][0]; 

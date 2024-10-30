@@ -160,8 +160,6 @@ double normalCDF(double& observation, double& mean, double& variance){
 //Still in progress
 long double returnComparison(std::vector<std::vector<double>>& simulations, std::vector<double>& actual){
 
-    double percentage = 0.1;
-
     std::vector<std::vector<double>> simReturns = {};
 
     for(int i = 1; i < simulations[0].size(); i++){
@@ -171,28 +169,17 @@ long double returnComparison(std::vector<std::vector<double>>& simulations, std:
         }
     }
 
-    std::vector<std::vector<double>> trueReturns = {};
-
-    trueReturns.reserve(actual.size() - 1);
-
-    for(int i = 1; i < actual.size(); i++){
-        trueReturns.push_back({abs(actual[i] - actual[i-1]), static_cast<double>(i-1)});
-    }
-
-    std::sort(trueReturns.begin(), trueReturns.end(), std::greater<>());
-
     long double totalCost = 1;
 
-    for(int i = 0; i < (trueReturns.size()); i++){
-        //std::cout << "\nPos: " << trueReturns[i][1];
+    for(int i = 0; i < (actual.size()); i++){
         //std::cout << "\nReturn size: " << simReturns.size();
 
-        double simMean = sampleMean(simReturns[trueReturns[i][1]]);
-        double simVariance = sampleVariance(simReturns[trueReturns[i][1]]);
+        double simMean = sampleMean(simReturns[i]);
+        double simVariance = sampleVariance(simReturns[i]);
 
         //std::cout << "\nVar: " << simVariance;
 
-        long double pdf = normalPDF(trueReturns[i][0], simMean, simVariance);
+        long double pdf = normalPDF(actual[i], simMean, simVariance);
 
         totalCost *= pdf*200;
     }
@@ -261,6 +248,14 @@ std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int p
         observations[i] = observations[i] - drift[i];
     }
 
+    std::vector<double> trueReturns = {};
+
+    trueReturns.reserve(observations.size() - 1);
+
+    for(int i = 1; i < observations.size(); i++){
+        trueReturns.push_back((observations[i] - observations[i-1]));
+    }
+
     double bestRMS = std::numeric_limits<double>::infinity();
 
     while (temperature > temperatureLimit){
@@ -274,7 +269,7 @@ std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int p
                 }
             }
             
-            RMS = cost(curApproximation, observations);
+            RMS = cost(curApproximation, trueReturns);
             //std::cout << "\nCurrent Var: " << newModel.parameters[1][0];
             //std::cout << "    Current Cost: " << RMS;
 
