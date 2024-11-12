@@ -139,13 +139,79 @@ def normalPlotter():
     plt.ylabel("Probability Density")
     plt.show()
 
+def trueVsEst():
+    dfData = pd.read_csv("build/dataOutput.csv", index_col=False)
+
+    dfEstimation = pd.read_csv("build/estimationOutput.csv", index_col=False)
+    
+    dfTrue = pd.read_csv("build/trueOutput.csv", index_col=False)
+
+    dfData.drop(dfData.tail(1).index,inplace=True) 
+    dfEstimation.drop(dfEstimation.tail(1).index,inplace=True) 
+    dfTrue.drop(dfTrue.tail(1).index,inplace=True) 
+
+    print(dfData.shape)
+    print(dfEstimation.shape)
+    print(dfTrue.shape)
+
+    times = np.arange(dfData.shape[0])
+
+    estimateAveragePath = np.zeros(dfEstimation.shape[0])
+
+    for index,row in enumerate(dfEstimation.to_numpy()):
+        row = row[:-1]
+
+        average = np.median(row, axis=0)
+
+        estimateAveragePath[index] = average
+
+    trueAveragePath = np.zeros(dfTrue.shape[0])
+
+    for index,row in enumerate(dfTrue.to_numpy()):
+        row = row[:-1]
+
+        average = np.median(row, axis=0)
+
+        trueAveragePath[index] = average
+    
+    for column in dfEstimation.iloc[:,:-1]:
+        values = dfEstimation[column]
+
+        plt.plot(values, color='green', alpha=0.25, linewidth = 0.5)
+
+    plt.plot(estimateAveragePath, color = 'yellow')
+
+    # for column in dfTrue.iloc[:,:-1]:
+    #       values = dfTrue[column]
+
+    #       plt.plot(values, color='green', alpha=0.25, linewidth = 0.5)
+
+    # plt.plot(trueAveragePath, color = 'yellow')
+
+    value = dfData[dfData.columns[-2]]
+
+    #print(dfData.head)
+
+    plt.plot(value, color = 'red', zorder=2, linewidth = 1)
+
+    #plt.xlim(-5,1200)
+
+    #plt.ylim(-5,15)
+
+    #plt.yticks(np.arange(-5,16,2))
+
+    plt.show()
+
+    return
+
 if __name__ == "__main__":
     #multiGrayLastFull()
     #standardPlotter()
     #multiGrayAveragePlot()
     #twoVectorAgainst()
     #twoVectorHist()
-    normalPlotter()
+    #normalPlotter()
+    trueVsEst()
 
     
     

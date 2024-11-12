@@ -61,8 +61,15 @@ Xoshiro256plus randomGenerator = timeSeedRand();
 randomPathMaker::randomPathMaker(){
 }
 
+float sqrt1(const float &n) 
+{
+   static union{int i; float f;} u;
+   u.i = 0x5F375A86 - (*(int*)&n >> 1);
+   return (int(3) - n * u.f * u.f) * n * u.f * 0.5f;
+}
+
 double randomPathMaker::dW(double dt){
-    return (inverseNormal(randomGenerator.d01())* dt);
+    return (inverseNormal(randomGenerator.d01())* sqrt1(dt));
 }
 
 std::vector<double> randomPathMaker::makePath(double intervalStart, double intervalEnd, double timeStep){

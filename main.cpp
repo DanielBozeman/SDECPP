@@ -11,27 +11,15 @@
 #include "FileUtils.hpp"
 
 void brownianPathTester(){
-    randomPathMaker rp;
+    double variance = 100;
 
-    std::string fileName = "output.csv";
+    std::vector<double> dWs = {};
 
-    int status = remove("output.csv");
+    for(int i = 0; i < 100000; i++){
+        dWs.push_back(randomPathMaker::dW(variance));
+    }
 
-    std::ofstream outfile(fileName);
-
-    auto t1 = std::chrono::high_resolution_clock::now();
-
-    std::vector<std::vector<double>> paths = rp.makeMultiplePaths(0, 10, 0.001, 500);
-
-    auto t2 = std::chrono::high_resolution_clock::now();
-
-    /* Getting number of milliseconds as an integer. */
-    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-
-    /* Getting number of milliseconds as a double. */
-    std::chrono::duration<double, std::milli> ms_double = t2 - t1;
-
-    std::cout << "\nTime: " << ms_double.count()/1000;
+    std::cout << "\nVar is " << sampleVariance(dWs) << "    mean is " << sampleMean(dWs);
 }
 
 double alphaFunction(double& value, double& time, std::vector<double>& parameters){
@@ -47,13 +35,13 @@ std::vector<double> eulerMaruyamaTest(int numSims){
     randomPathMaker rp;
 
     double intervalStart = 0;
-    double intervalEnd = 10;
+    double intervalEnd = 1;
 
-    double timeDiscretization = pow(2, -8);
+    double timeDiscretization = 0.003;
 
-    std::vector<std::vector<double>> constants = {{0.05}, {0.2}};
+    std::vector<std::vector<double>> constants = {{0.15}, {0.3}};
 
-    double initialValue = 5;
+    double initialValue = 120;
 
     std::vector<double> times = {0};
 
@@ -65,37 +53,31 @@ std::vector<double> eulerMaruyamaTest(int numSims){
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants);
 
-    std::vector<double> approximation = averageEulerMaruyama(model, numSims);
+    std::vector<std::vector<double>> approximation = multipleEulerMaruyama(model, numSims);
 
-    return approximation;
+    multiVectorToCSV(approximation, "output.csv");
+
+    return {};
 }
 
 void fileWriterTest(){
 
-    std::vector<std::vector<double>> vectors = {};
+    std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
 
-    auto t1 = std::chrono::high_resolution_clock::now();
+    std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
 
-    std::cout << "\nStarting test";
+    stockCloses = y;
 
-    std::vector<double> approximation = eulerMaruyamaTest(1000);
+    std::vector<std::vector<double>> stocks = {stockCloses};
 
-    vectorToCSV(approximation, "output.csv");
-
-    auto t2 = std::chrono::high_resolution_clock::now();
-
-    /* Getting number of milliseconds as an integer. */
-    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-
-    /* Getting number of milliseconds as a double. */
-    std::chrono::duration<double, std::milli> ms_double = t2 - t1;
-
-    std::cout << "\nTime taken: " << ms_double.count()/1000;
+    multiVectorToCSV(stocks, "output.csv");
 }
 
 void rmseTest(){
-    std::vector<double> actual = {0,3,5,6};
+    std::vector<std::vector<double>> actual = {{0,4,5,6},{0,2,5,6}};
     std::vector<double> prediction = {0,0,0,0};
+
+    std::cout << multiVectorRMSE(actual, prediction);
 
 }
 
@@ -111,6 +93,10 @@ std::vector<std::vector<double>> simulatedAnnealingTest(){
     for(int i = 0; i < stockCloses.size(); i++){
         times.push_back(i);
     }
+
+    // for(int i = 0; i < stockCloses.size(); i++){
+    //     std::cout << "\nStock Value: " << stockCloses[i];
+    // }
 
     std::vector<std::vector<double>> constants = {{0}, {0.0001}};
 
@@ -300,43 +286,120 @@ void statsTests(){
 
     std::vector<std::vector<double>> costs = {};
 
-    std::vector<std::vector<double>> outReturns = {};
+    std::vector<double> trueReturns = {};
 
-    for(int i = 0; i < 50; i++){
+    for(int i = 1; i < observations.size(); i++){
+        trueReturns.push_back((observations[i] - observations[i-1]));
+    }
+
+    while(simModel.parameters[1][0] < 10){
         std::vector<std::vector<double>> sims = multipleEulerMaruyama(simModel, 500);
 
-        double cost = returnComparison(sims, observations);
+        double cost = returnComparison(sims, trueReturns);
 
         std::cout << "\nVariance: " << simModel.parameters[1][0] <<  "    Cost: " << cost;
 
         simModel.parameters[1][0] += 0.0002;
     }
-
-    //multiVectorToCSV(outReturns, "output.csv");
-
-    //multiVectorToCSV(sims, "output.csv");
-
-    //vectorToCSV(sims[10], "output.csv");
-
-
 }
 
 void stats(){
-    std::vector<double> pdfTests = {2.5, 5, 10, 25};
+    
+    double simVariance = 0.005;
+    double trueVariance = 0.00951891;
+    double startValue = 3655.04;
+    double drift = 0.000891396;
+    double simDrift = 0;
 
-    double mean = 12;
-    double variance = 25;
+    int timeLength = 500;
+    std::vector<double> times = {};
 
-    for(int i = 0; i < pdfTests.size(); i++){
-        std::cout << "\nPDF of " << pdfTests[i] << " is " << normalPDF(pdfTests[i], mean, variance);
+    for(int i = 0; i < timeLength; i++){
+        times.push_back(i);
     }
+
+    std::vector<std::vector<double>> simConstants = {{simDrift},{trueVariance}};
+    std::vector<std::vector<double>> observationConstants = {{drift},{trueVariance}};
+
+    stochasticModel simModel = stochasticModel(alphaFunction, betaFunction, startValue, times, simConstants);
+    stochasticModel obsModel = stochasticModel(alphaFunction, betaFunction, startValue, times, observationConstants);
+    
+    std::vector<double> observations = csvColumnToVector("StockData/SPX_Post61.csv", 6);
+
+    std::vector<double> y(observations.end() - 500, observations.end());
+
+    observations = y;
+
+    std::vector<std::vector<double>> costs = {};
+
+    while(simModel.parameters[0][0] < 0.001){
+        std::vector<std::vector<double>> sims = multipleEulerMaruyama(simModel, 2000);
+
+        double cost = multiVectorRMSE(sims, observations);
+
+        std::cout << "\nVariance: " << simModel.parameters[0][0] <<  "    Cost: " << cost;
+
+        simModel.parameters[0][0] += 0.00005;
+    }
+
+    driftVolFinder();
+}
+
+void testing(){
+    auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    auto betaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * pow(value, parameters[1]));
+    };
+
+    std::vector<double> times = {};
+    times.push_back(0);
+
+    while(times.back() < 12){
+        times.push_back(times.back() + 0.01);
+    }
+
+    double initialValue = 30.0;
+
+    std::vector<std::vector<double>> baseConstants = {{0.05},{1.5, 0.4}};
+
+    stochasticModel obsModel = stochasticModel(alphaFunction, betaFunction, initialValue, times, baseConstants);
+
+    std::vector<double> stockCloses = eulerMaruyama(obsModel);
+
+    std::vector<std::vector<double>> approx = multipleEulerMaruyama(obsModel, 500);
+
+    vectorToCSV(stockCloses, "dataOutput.csv");
+
+    std::vector<double> trueReturns = {};
+
+    for(int i = 1; i < stockCloses.size(); i++){
+        trueReturns.push_back((stockCloses[i] - stockCloses[i-1]));
+    }
+
+    multiVectorToCSV(approx, "estimationOutput.csv");
+
+    std::cout << "\nCost: " << returnComparison(approx, trueReturns);
+    std::cout << "\nSize: " << stockCloses.size();
+    std::cout << "\nTimes: " << times.size();
 }
 
 int main(){
-    SAComparison();
+    //SAComparison();
     //varianceViewer();
     //logDifferenceTest();
     //statsTests();
     //driftVolFinder();
     //stats();
+    //fitOrnstein("StockData/SPX_Post61.csv", 6, -500);
+    //fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
+    //rmseTest();
+    //eulerMaruyamaTest(500);
+    //createPath();
+    //brownianPathTester();
+    //fileWriterTest();
+    //testing();
+    fitCEV();
 }

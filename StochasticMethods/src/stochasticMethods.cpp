@@ -1,6 +1,7 @@
 #include "stochasticMethods.hpp"
 #include <vector>
 #include "RandomUtils.hpp"
+#include <iostream>
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters){
     return 0;
@@ -28,10 +29,12 @@ std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> bro
 
     if(brownianPath.size() == 0){
         randomPathMaker rp = randomPathMaker();
-        brownianPath = rp.makePath(model.timeInterval[0], model.timeInterval.back(), dt);
+        brownianPath = rp.makePath(model.timeInterval[0], model.timeInterval.back() + dt, dt);
     }
 
     approximation.reserve((model.timeInterval.back() - model.timeInterval[0])/dt);
+
+    //std::cout << "\nPath size: " << brownianPath.size(); 
 
     for(int i = 1; i < model.timeInterval.size(); i++){
         double prevValue = approximation[i-1];
@@ -77,7 +80,7 @@ std::vector<std::vector<double>> multipleEulerMaruyama(stochasticModel model, in
 
     if(brownianPaths.size() == 0){
         randomPathMaker rp = randomPathMaker();
-        brownianPaths = rp.makeMultiplePaths(model.timeInterval[0], model.timeInterval.back(), dt, numSimulations);
+        brownianPaths = rp.makeMultiplePaths(model.timeInterval[0], model.timeInterval.back() + dt, dt, numSimulations);
     }
 
     approximations.reserve(((model.timeInterval.back() - model.timeInterval[0])/dt) * brownianPaths.size());

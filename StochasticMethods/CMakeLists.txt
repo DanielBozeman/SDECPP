@@ -6,6 +6,7 @@ if(NOT TARGET RandomUtils)
     add_subdirectory(RandomUtils)
 endif()
 
+include_directories(../FileUtils)
 
 include_directories(include)
-add_library(${PROJECT_NAME} src/stochasticMethods.cpp src/parameterEstimation.cpp)
+add_library(${PROJECT_NAME} src/stochasticMethods.cpp src/parameterEstimation.cpp src/modelEstimationTests.cpp)

@@ -3,5 +3,6 @@
 
 #include "include/stochasticMethods.hpp"
 #include "include/parameterEstimation.hpp"
+#include "include/modelEstimationTests.hpp"
 
 #endif // __STOCHASTIC_H__
