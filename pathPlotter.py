@@ -140,21 +140,17 @@ def normalPlotter():
     plt.show()
 
 def trueVsEst():
+
+    #Reading data
     dfData = pd.read_csv("build/dataOutput.csv", index_col=False)
 
     dfEstimation = pd.read_csv("build/estimationOutput.csv", index_col=False)
     
     dfTrue = pd.read_csv("build/trueOutput.csv", index_col=False)
 
-    dfData.drop(dfData.tail(1).index,inplace=True) 
-    dfEstimation.drop(dfEstimation.tail(1).index,inplace=True) 
-    dfTrue.drop(dfTrue.tail(1).index,inplace=True) 
-
     print(dfData.shape)
     print(dfEstimation.shape)
     print(dfTrue.shape)
-
-    times = np.arange(dfData.shape[0])
 
     estimateAveragePath = np.zeros(dfEstimation.shape[0])
 

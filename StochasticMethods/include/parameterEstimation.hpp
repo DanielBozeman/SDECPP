@@ -9,7 +9,7 @@ typedef long double (*costFunction)(std::vector<std::vector<double>>&, std::vect
 long double multiVectorRMSE(std::vector<std::vector<double>>& simulations, std::vector<double>& actual);
 double sampleMean(std::vector<double>& observations);
 double sampleVariance(std::vector<double>& observations);
-long double normalPDF(double& observation, double& mean, double& variance);
+long double normalPDF(double observation, double mean, double variance);
 double normalCDF(double& observation, double& mean, double& variance);
 long double returnComparison(std::vector<std::vector<double>>& simulations, std::vector<double>& actual);
 double averageLogReturnComparison(std::vector<std::vector<double>> simulations, std::vector<double> actual);

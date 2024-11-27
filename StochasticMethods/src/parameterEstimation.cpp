@@ -99,11 +99,19 @@ std::vector<std::vector<double>> findAbsReturns(std::vector<std::vector<double>>
 double sampleMean(std::vector<double>& observations){
     double mean = 0;
 
+    int skips = 0;
+
     for(int i = 0; i < observations.size(); i++){
-        mean += observations[i];
+        if(!isnan(observations[i])){
+            mean += observations[i]; 
+        }else{
+            skips += 1;
+        }
     }
 
-    mean /= observations.size();
+    //std::cout << "\nMean: " << mean;
+
+    mean /= (observations.size() - skips);
 
     return mean;
 }
@@ -111,28 +119,41 @@ double sampleMean(std::vector<double>& observations){
 //Calculates the sample variance of a set of data
 double sampleVariance(std::vector<double>& observations){
 
-    double mean = sampleMean(observations);
+    //double mean = sampleMean(observations);
+    double mean = 0;
 
     double variance = 0;
 
+    int skips=0;
+
     for(int i = 0; i < observations.size(); i++){
-        variance += (observations[i] - mean)*(observations[i] - mean);
+        if(!isnan(observations[i])){
+            variance += (observations[i] - mean)*(observations[i] - mean);
+            //std::cout << "\nVar: " << variance;
+        }else{
+            skips += 1;
+        }
     }
 
-    variance /= (observations.size() - 1.0);
+    //std::cout << "\nVar: " << variance;
+    variance /= (observations.size() - 1.0 - skips);
+
 
     return variance;
 }
 
 //Calculates the pdf of a normal distribution with given mean and variance at a given datapoint
-long double normalPDF(double& observation, double& mean, double& variance){
+long double normalPDF(double observation, double mean, double variance){
     long double pdf = 1/sqrt(2 * 3.1415926 * variance);
 
-    pdf *= exp(-1 * (((observation - mean)*(observation - mean))/(2 * variance)));
+    long double endPDF = pdf * exp(-1* (((observation - mean)*(observation - mean))/(2 * variance)));
 
-    //std::cout << "\nPDF: " << pdf;
 
-    return pdf;
+    //std::cout << "\npdf part: " << pdf;
+
+    //std::cout << "\ne part: " << exp(-1* (((observation - mean)*(observation - mean))/(2 * variance)));
+
+    return endPDF;
 }
 
 //Calculates the cdf of a normal distribution with given mean and variance at a given datapoint
@@ -175,6 +196,7 @@ long double returnComparison(std::vector<std::vector<double>>& simulations, std:
         //std::cout << "\nReturn size: " << simReturns.size();
 
         double simMean = sampleMean(simReturns[i]);
+        simMean = 0;
         double simVariance = sampleVariance(simReturns[i]);
 
         //std::cout << "\nVar: " << simVariance;
@@ -183,11 +205,14 @@ long double returnComparison(std::vector<std::vector<double>>& simulations, std:
 
         long double pdf = normalPDF(actual[i], simMean, simVariance);
 
-        //std::cout << "\nPDF: " << pdf;
+        //long double cdf = normalCDF(actual[i], simMean, simVariance);
+
+        //std::cout << "\nCDF: " << cdf;
 
         totalCost += (log(pdf));
         
-        //std::cout << "\nLog: " << totalCost;
+        //std::cout << "\nTotal: " << totalCost << " Log: " << log(cdf);
+        //std::cout << "\nMean: " << simMean << " Var: " << simVariance << " Obs: " << actual[i];
     }
 
     return (-1 * totalCost);
@@ -263,6 +288,8 @@ std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int p
 
     while (temperature > temperatureLimit){
 
+        bool moved = false;
+
         for(int i = 0; i < stepsAtTemp; i++){
 
             curApproximation = multipleEulerMaruyama(newModel, numSimulations);
@@ -275,7 +302,7 @@ std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int p
             
             RMS = cost(curApproximation, trueReturns);
 
-            //std::cout << "\nCurrent Var: " << newModel.parameters[1][0] << "    " << newModel.parameters[1][1];
+            //std::cout << "\nCurrent Var: " << newModel.parameters[1][0] << "    " << newModel.parameters[1][1] << "    " << newModel.parameters[1][2];
             //std::cout << "    Current Cost: " << RMS;
 
             if((RMS == 0 || RMS == std::numeric_limits<double>::infinity() || std::isnan(RMS)) && (oldRMS == 0 || oldRMS == std::numeric_limits<double>::infinity() || std::isnan(RMS))){
@@ -288,8 +315,9 @@ std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int p
             if (prob > randomGenerator.d01()){
                 oldRMS = RMS;
                 currentModel = newModel;
-                //std::cout << "\nCurrent Var: " << newModel.parameters[1][0];
-                std::cout << "    New Cost: " << RMS;
+                moved = true;
+                //std::cout << "\nCurrent Var: " << newModel.parameters[1][0] << "  " << newModel.parameters[1][1];
+                //std::cout << "    New Cost: " << RMS;
             }
 
             if(RMS < bestRMS){
@@ -299,6 +327,10 @@ std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int p
 
             newModel.parameters[parameterSet] = parameterNeighbor(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet], currentModel.parameterSteps[parameterSet]);       
 
+        }
+        if(!moved){
+            std::cout << "\nNo movement that step, done here";
+            break;
         }
         temperature *= coolingRate;
         std::cout << "\nTemperature: " << temperature;

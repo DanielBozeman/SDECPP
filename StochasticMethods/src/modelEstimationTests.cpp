@@ -195,36 +195,36 @@ stochasticModel fitCEV(){
     std::vector<double> times = {};
     times.push_back(0);
 
-    while(times.back() < 12){
+    while(times.back() < 20){
         times.push_back(times.back() + 0.01);
     }
 
     //double initialValue = stockCloses[0];
-    double initialValue = 30.0;
+    double initialValue = 1.0;
 
-    std::vector<std::vector<double>> baseConstants = {{0.05},{1.5, 0.4}};
+    std::vector<std::vector<double>> baseConstants = {{0.05},{0.15,0.5}};
 
     stochasticModel obsModel = stochasticModel(alphaFunction, betaFunction, initialValue, times, baseConstants);
 
     std::vector<double> stockCloses = eulerMaruyama(obsModel);
 
-    vectorToCSV(stockCloses, "dataOutput.csv");
+    std::vector<double> stockClosesToWrite = stockCloses;
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
 
     stochasticModel baseModel = model;
 
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 3; i++){
 
         std::cout << "\nStarting Drift Estimation";
-        model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 150, 1, multiVectorRMSE);
+        model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 400, 1, multiVectorRMSE);
         
         //model.parameters[0] = {0.000865574};
         std::cout << "\nDrift Est: " << model.parameters[0][0];
         std::cout << "\nStarting Vol Estimation";
 
         model.betaFunction = betaFunction;
-        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 150, 14, returnComparison);
+        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 50, 0.9, 100, 15, returnComparison);
         
         std::cout << "\n\n For Run " << i;
         std::cout << "\nDrift Est: " << model.parameters[0][0] ;
@@ -247,27 +247,107 @@ stochasticModel fitCEV(){
 
     multiVectorToCSV(trueVectors, "trueOutput.csv");
 
+    vectorToCSV(stockClosesToWrite, "dataOutput.csv");
+
     return model;
 }
 
-void createPath(){
+stochasticModel fitRandom(std::string fileName, int dataColumn, int dataStart, int dataEnd){
     auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
-        return (parameters[0]*(parameters[1] - value));
+        return (parameters[0] * value + pow(value, parameters[1]) + parameters[2]);
     };
 
     auto betaFunction = [](double& value, double& time, std::vector<double>& parameters){
-        return (parameters[0]);
+        return (parameters[0] * value + pow(value, parameters[1]) + parameters[2]);
     };
 
-    double initialValue = 10.0;
+    std::vector<double> stockCloses = csvColumnToVector(fileName, dataColumn);
 
-    std::vector<std::vector<double>> baseConstants = {{1.0,0.0},{1.44}};
+    std::vector<double> y = {};
+    
+    if(dataStart < 0){
+        std::vector<double> y(stockCloses.end() + dataStart, stockCloses.end() - dataEnd);
+        stockCloses = y;
+    }else if(dataEnd < 0){
+        std::vector<double> y(stockCloses.begin() + dataStart, stockCloses.begin() - dataEnd);
+        stockCloses = y;
+    }else{
+        std::vector<double> y(stockCloses.begin() + dataStart, stockCloses.end() - dataEnd);
+        stockCloses = y;
+    }
+
+    std::vector<double> times = {};
+
+    for(int i = 0; i < stockCloses.size(); i++){
+        times.push_back(i);
+    }
+
+    double initialValue = stockCloses[0];
+
+    std::vector<std::vector<double>> constants = {{0,0,0}, {0,0,0}};
+
+    //Starting with a very wide constant limit and step values
+    std::vector<std::vector<std::vector<double>>> constantLimits = {{{-10,10},{-10,10},{-10,10}},{{-10,10},{-10,10},{-10,10}}};
+
+    std::vector<std::vector<double>> constantSteps = {{0.01,0.01,0.01}, {0.01,0.01,0.01}};
+
+    std::cout << "\nInitial Value: " << initialValue;
+
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
+
+    for(int i = 0; i < 5; i++){
+
+        std::cout << "\nStarting Drift Estimation";
+        model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 500, 1, multiVectorRMSE);
+        
+        //model.parameters[0] = {0, 0.000865574, 0};
+        std::cout << "\nDrift Est: " << model.parameters[0][0] << " " << model.parameters[0][1] << " " << model.parameters[0][2];
+        std::cout << "\nStarting Vol Estimation";
+
+        model.betaFunction = betaFunction;
+        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 50, 0.9, 150, 15, returnComparison);
+        
+        std::cout << "\n\n For Run " << i;
+        std::cout << "\nDrift Est: " << model.parameters[0][0] << " " << model.parameters[0][1] << " " << model.parameters[0][2];;
+        std::cout << "\nVolatility Est: " << model.parameters[1][0] << " " << model.parameters[1][1] << " " << model.parameters[1][2];; 
+
+        for(int j = 0; j < constantSteps.size(); j++){
+            for(int k = 0; k < constantSteps[j].size(); k++){
+                constantSteps[j][k] *= 0.01;
+            }
+        }
+
+        model.parameterSteps = constantSteps;
+    }
+
+    std::vector<std::vector<double>> estimations = multipleEulerMaruyama(model, 500);
+
+    multiVectorToCSV(estimations, "estimationOutput.csv");
+
+    vectorToCSV(stockCloses, "dataOutput.csv");
+
+    return model;
+}
+
+
+void createPath(){
+    auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    auto betaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * pow(value, parameters[1]));
+    };
+
+    double initialValue = 1.0;
+
+    std::vector<std::vector<double>> baseConstants = {{0.05},{0.15,0.5}};
 
     std::vector<double> times = {0};
 
-    double dt = 0.0033;
+    double dt = 0.01;
 
-    while(times.back() < 12){
+    while(times.back() < 20){
         times.push_back(times.back() + dt);
     }
 
@@ -275,7 +355,7 @@ void createPath(){
 
     stochasticModel obsModel = stochasticModel(alphaFunction, betaFunction, initialValue, times, baseConstants);
 
-    std::vector<std::vector<double>> stockCloses = multipleEulerMaruyama(obsModel, 5);
+    std::vector<std::vector<double>> stockCloses = multipleEulerMaruyama(obsModel, 500);
 
     multiVectorToCSV(stockCloses, "output.csv");
 }
