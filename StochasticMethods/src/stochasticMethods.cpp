@@ -2,6 +2,8 @@
 #include <vector>
 #include "RandomUtils.hpp"
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters){
     return 0;
@@ -156,3 +158,84 @@ std::vector<double> averageEulerMaruyama(stochasticModel model, int numSimulatio
 
     return average;
 }
+
+double testFit(stochasticModel model, std::vector<double> data, int numInterRuns){
+    
+    stochasticModel baseModel = model;
+
+    std::vector<double> times = model.timeInterval;
+
+    double dt = ((times[1] - times[0])/1000);
+
+    std::vector<std::vector<double>> endTests = {{}};
+    
+    for(int i = 1; i < times.size(); i++){
+
+        std::vector<double> interTimes = {};
+
+        interTimes.push_back(times[i-1]);
+
+        int numTimes = (times[i] - times[i-1])/dt;
+
+        for(int j = 0; j < numTimes; j++){
+            interTimes.push_back(interTimes.back() + dt);
+        }
+
+        stochasticModel subModel = model;
+        subModel.timeInterval = interTimes;
+        subModel.initialValue = data[i-1];
+
+        std::vector<double> finalValues = {};
+
+        std::vector<std::vector<double>> interData = multipleEulerMaruyama(subModel, numInterRuns);
+
+        for(int j = 0; j < interData.size(); j++){
+            finalValues.push_back(interData[j].back());
+        }
+
+        std::sort(finalValues.begin(), finalValues.end());
+
+        endTests.push_back(finalValues);
+    }
+
+    std::vector<int> ranks = {-5};
+
+    for(int i = 1; i < data.size(); i++){
+        auto it = std::lower_bound(endTests[i].begin(), endTests[i].end(), data[i]);
+
+        int position = 0;
+        if (it == endTests[i].end()) {
+            //std::cout << "\nElement not found\n";
+            //std::cout << "\nThe number " << data[i] << " would be inserted at position " << endTests[i].size() << std::endl;
+            position = endTests[i].size();
+        } else {
+            position = std::distance(endTests[i].begin(), it);
+            //std::cout << "\nThe number " << data[i] << " would be inserted at position " << position << std::endl;
+        }
+
+        ranks.push_back(position);
+    }
+
+    std::vector<int> omegas = {};
+
+    for(int i = 0; i < numInterRuns + 1; i++){
+        omegas.push_back(count(ranks.begin(), ranks.end(), i));
+    }
+
+    double chiVar = (double(data.size() - 1)/(numInterRuns + 1));
+
+    //std::cout << "\n" << chiVar;
+
+    double chiStatistic = 0;
+
+    for(int i = 0; i < omegas.size(); i++){
+        double temp = ((omegas[i] - chiVar)*(omegas[i]-chiVar))/double(chiVar);
+
+        //std::cout << "\nCur stat: " << temp;
+
+        chiStatistic += temp;
+    }
+
+    //std::cout << "\nChi var is " << chiVar;
+    return chiStatistic;
+}   

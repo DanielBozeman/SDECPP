@@ -77,6 +77,10 @@ stochasticModel fitBlackScholes(std::string fileName, int dataColumn, int dataSt
         model.parameterSteps = constantSteps;
     }
 
+    double stat = testFit(model, stockCloses, 90);
+
+    std::cout << "\nTest stat is " << stat;
+
     multiVectorToCSV({stockCloses}, "dataOutput.csv");
 
     std::vector<std::vector<double>> estimationVectors = multipleEulerMaruyama(model, 500);

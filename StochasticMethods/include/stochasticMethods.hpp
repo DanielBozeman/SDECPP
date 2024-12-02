@@ -32,4 +32,6 @@ std::vector<std::vector<double>> multipleEulerMaruyama(stochastic_function alpha
 
 std::vector<double> averageEulerMaruyama(stochasticModel model, int numSimulations);
 
+double testFit(stochasticModel model, std::vector<double> data, int numInterRuns);
+
 #endif // __STOCHASTICMETHODS_H__

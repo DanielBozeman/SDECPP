@@ -480,29 +480,21 @@ void testing(){
     std::cout << "\nTimes: " << times.size();
 }
 
-void testFit(std::string fileName, int dataColumn, int dataStart, int dataEnd){
+void testBS(){
     auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
-        return (parameters[0] * value + pow(value, parameters[1]) + parameters[2]);
+        return (parameters[0] * value);
     };
 
     auto betaFunction = [](double& value, double& time, std::vector<double>& parameters){
-        return (parameters[0] * value + pow(value, parameters[1]) + parameters[2]);
+        return (parameters[0] * value);
     };
 
-    std::vector<double> stockCloses = csvColumnToVector(fileName, dataColumn);
+    std::vector<std::vector<double>> constants = {{0.000891396},{0.00951891}};
 
-    std::vector<double> y = {};
+    std::vector<double> stockCloses = csvColumnToVector("StockData/SPX_Post61.csv", 6);
     
-    if(dataStart < 0){
-        std::vector<double> y(stockCloses.end() + dataStart, stockCloses.end() - dataEnd);
-        stockCloses = y;
-    }else if(dataEnd < 0){
-        std::vector<double> y(stockCloses.begin() + dataStart, stockCloses.begin() - dataEnd);
-        stockCloses = y;
-    }else{
-        std::vector<double> y(stockCloses.begin() + dataStart, stockCloses.end() - dataEnd);
-        stockCloses = y;
-    }
+    std::vector<double> y(stockCloses.end() - 500, stockCloses.end());
+    stockCloses = y;
 
     std::vector<double> times = {};
 
@@ -512,9 +504,27 @@ void testFit(std::string fileName, int dataColumn, int dataStart, int dataEnd){
 
     double initialValue = stockCloses[0];
 
-    std::vector<std::vector<double>> constants = {{0.00130448,-0.851749,-1.88018}, {0.0075573,-0.0504966,7.13174}};
-}
+    stochasticModel bsModel = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants);
 
+    bsModel.parameters[1][0] /= 2;
+    
+    double stat = testFit(bsModel, stockCloses, 90);
+
+    std::cout << "\nParameter is " << bsModel.parameters[1][0] << "   stat is " << stat;
+
+    bsModel.parameters[1][0] *= 2;
+
+    stat = testFit(bsModel, stockCloses, 90);
+
+    std::cout << "\nParameter is " << bsModel.parameters[1][0] << "   stat is " << stat;
+
+    bsModel.parameters[1][0] *= 2;
+
+    stat = testFit(bsModel, stockCloses, 90);
+
+    std::cout << "\nParameter is " << bsModel.parameters[1][0] << "   stat is " << stat;
+
+}
 int main(){
     //SAComparison();
     //varianceViewer();
@@ -523,7 +533,7 @@ int main(){
     //driftVolFinder();
     //stats();
     //fitOrnstein("StockData/SPX_Post61.csv", 6, -500);
-    //fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
+    fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
     //rmseTest();
     //eulerMaruyamaTest(500);
     //createPath();
@@ -532,5 +542,6 @@ int main(){
     //testing();
     //fitCEV();
     //cevTest();
-    fitRandom("StockData/SPX_Post61.csv", 6, -500);
+    //fitRandom("StockData/SPX_Post61.csv", 6, -500);
+    //testBS();
 }
