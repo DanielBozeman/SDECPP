@@ -523,8 +523,14 @@ void testBS(){
     stat = testFit(bsModel, stockCloses, 90);
 
     std::cout << "\nParameter is " << bsModel.parameters[1][0] << "   stat is " << stat;
+}
+
+//--------------------------------------------
+
+void rewriteTest(){
 
 }
+
 int main(){
     //SAComparison();
     //varianceViewer();
@@ -533,8 +539,8 @@ int main(){
     //driftVolFinder();
     //stats();
     //fitOrnstein("StockData/SPX_Post61.csv", 6, -500);
-    fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
-    //rmseTest();
+    //fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
+    //rmseTest();^
     //eulerMaruyamaTest(500);
     //createPath();
     //brownianPathTester();
@@ -544,4 +550,6 @@ int main(){
     //cevTest();
     //fitRandom("StockData/SPX_Post61.csv", 6, -500);
     //testBS();
+
+    std::cout << "\nTest output\n";
 }

@@ -23,6 +23,16 @@ void stochasticModel::setParameters(std::vector<std::vector<double>> constants){
     parameters = constants;
 }
 
+void linearlySpacedArray(std::vector<double> &xs, double a, double b, double h)
+{   
+    std::size_t N = (b-a)/h + 1;
+    std::vector<double>::iterator x;
+    double val;
+    for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h) {
+        *x = val;
+    }
+} 
+
 std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath)
 {
     std::vector<double> approximation = {model.initialValue};
