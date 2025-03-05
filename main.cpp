@@ -529,6 +529,43 @@ void testBS(){
 
 void rewriteTest(){
 
+    auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    auto betaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    std::vector<std::vector<double>> parameters = {{1},{0.2}};
+
+    double initialValue = 1;
+
+    std::vector<double> times = {};
+
+    double start = 0;
+    double end = 1;
+    double dt = 0.0001;
+    
+    linearlySpacedVector(times, start, end, dt);
+
+    std::vector<double> output;
+
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
+    
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    for(int i = 0; i < 5000; i++){
+        eulerMaruyamaByReferense(output,model);
+        //output = eulerMaruyama(model);
+    } 
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+
+    std::cout << "Execution time: " << duration.count() << " milliseconds" << std::endl;
+
+    return;
 }
 
 int main(){
@@ -551,5 +588,5 @@ int main(){
     //fitRandom("StockData/SPX_Post61.csv", 6, -500);
     //testBS();
 
-    std::cout << "\nTest output\n";
+    rewriteTest();
 }

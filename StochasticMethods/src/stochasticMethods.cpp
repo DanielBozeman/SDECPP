@@ -23,9 +23,9 @@ void stochasticModel::setParameters(std::vector<std::vector<double>> constants){
     parameters = constants;
 }
 
-void linearlySpacedArray(std::vector<double> &xs, double a, double b, double h)
-{   
+void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   
     std::size_t N = (b-a)/h + 1;
+    xs.resize(N);
     std::vector<double>::iterator x;
     double val;
     for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h) {
@@ -79,6 +79,33 @@ std::vector<double> eulerMaruyama(stochastic_function alphaFunction, stochastic_
     }
 
     return approximation;
+}
+
+void eulerMaruyamaByReferense(std::vector<double> &approximation, stochasticModel model, std::vector<double> brownianPath){
+    
+    approximation.resize(model.timeInterval.size());
+    
+    approximation[0] = model.initialValue;
+
+    double dt = model.timeInterval[1] - model.timeInterval[0];
+
+    if(brownianPath.size() == 0){
+        randomPathMaker rp = randomPathMaker();
+        brownianPath = rp.makePath(model.timeInterval[0], model.timeInterval.back() + dt, dt);
+    }
+
+    approximation.reserve((model.timeInterval.back() - model.timeInterval[0])/dt);
+
+    //std::cout << "\nPath size: " << brownianPath.size(); 
+
+    for(int i = 1; i < model.timeInterval.size(); i++){
+        double prevValue = approximation[i-1];
+        double prevTime = model.timeInterval[i-1];
+        double dW = brownianPath[i] - brownianPath[i-1];
+        approximation.push_back((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
+    }
+
+    return;
 }
 
 std::vector<std::vector<double>> multipleEulerMaruyama(stochasticModel model, int numSimulations, std::vector<std::vector<double>> brownianPaths){
