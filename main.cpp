@@ -544,37 +544,25 @@ void rewriteTest(){
     std::vector<double> times = {};
 
     double start = 0;
-    double end = 10;
-    double dt = 1;
+    double end = 1;
+    double dt = 0.0001;
     
     linearlySpacedVector(times, start, end, dt);
 
     std::vector<double> output;
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
-    
-    randomPathMaker rp = randomPathMaker();
-
-    std::vector<double> path = rp.makePath(times[0], times.back() + dt, dt);
 
     std::vector<std::vector<double>> pathSet = {};
 
-    double sum = 0;
-
-    int numSims = 1000000;
-
-    path = rp.makePath(times[0], times.back() + dt, dt); 
+    int numSims = 100;
 
     for(int i = 0; i < numSims; i++){
-        path = rp.makePath(times[0], times.back()+ dt, dt);
-        sum += path.back();
-    }
+        eulerMaruyamaByReference(output, model);
+        pathSet.push_back(output);
+    }  
 
-    sum = sum / numSims;
-
-    std::cout << "\nAverage dW: " << sum;
-
-    //multiVectorToCSV(pathSet, "output.csv");
+    multiVectorToCSV(pathSet, "output.csv");
     return;
 }
 

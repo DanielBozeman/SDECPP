@@ -81,7 +81,7 @@ std::vector<double> eulerMaruyama(stochastic_function alphaFunction, stochastic_
     return approximation;
 }
 
-void eulerMaruyamaByReferense(std::vector<double> &approximation, stochasticModel model, std::vector<double> brownianPath){
+void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticModel model, std::vector<double> brownianPath){
     
     approximation.resize(model.timeInterval.size());
     
@@ -99,7 +99,6 @@ void eulerMaruyamaByReferense(std::vector<double> &approximation, stochasticMode
         double prevTime = model.timeInterval[i-1];
         double dW = brownianPath[i] - brownianPath[i-1];
         approximation[i] = ((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
-        std::cout << "\ndW: " << dW;
     }
 
     return;
