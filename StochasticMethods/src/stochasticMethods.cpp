@@ -104,6 +104,32 @@ void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticMode
     return;
 }
 
+void multipleEulerMaruyamaByReference(std::vector<std::vector<double>> &approximations, stochasticModel model, int numSimulations, std::vector<std::vector<double>> brownianPaths){
+    double prevValue;
+    double prevTime;
+    double dW;
+    
+    approximations.resize(numSimulations, std::vector<double>(model.timeInterval.size()));
+
+    double dt = model.timeInterval[1] - model.timeInterval[0];
+
+    if(brownianPaths.size() == 0){
+        randomPathMaker rp = randomPathMaker();
+        brownianPaths = rp.makeMultiplePaths(model.timeInterval[0], model.timeInterval.back() + dt, dt, numSimulations);
+    }
+
+    approximations.reserve(((model.timeInterval.back() - model.timeInterval[0])/dt) * brownianPaths.size());
+    
+    std::vector<double> approximation;
+
+    for(int i = 0; i < numSimulations; i++){
+        
+        eulerMaruyamaByReference(approximation, model, brownianPaths[i]);
+
+        approximations[i] = approximation;
+    }    
+}
+
 std::vector<std::vector<double>> multipleEulerMaruyama(stochasticModel model, int numSimulations, std::vector<std::vector<double>> brownianPaths){
     double prevValue;
     double prevTime;

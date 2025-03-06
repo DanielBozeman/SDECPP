@@ -34,6 +34,8 @@ std::vector<std::vector<double>> multipleEulerMaruyama(stochasticModel model, in
 
 std::vector<std::vector<double>> multipleEulerMaruyama(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters, int numSimulations, std::vector<std::vector<double>> brownianPaths = {});
 
+void multipleEulerMaruyamaByReference(std::vector<std::vector<double>> &approximations, stochasticModel model, int numSimulations, std::vector<std::vector<double>> brownianPaths = {});
+
 std::vector<double> averageEulerMaruyama(stochasticModel model, int numSimulations);
 
 double testFit(stochasticModel model, std::vector<double> data, int numInterRuns);

@@ -549,20 +549,15 @@ void rewriteTest(){
     
     linearlySpacedVector(times, start, end, dt);
 
-    std::vector<double> output;
-
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
 
-    std::vector<std::vector<double>> pathSet = {};
+    std::vector<std::vector<double>> observations;
 
-    int numSims = 100;
 
-    for(int i = 0; i < numSims; i++){
-        eulerMaruyamaByReference(output, model);
-        pathSet.push_back(output);
-    }  
+    multipleEulerMaruyamaByReference(observations, model, 100);
 
-    multiVectorToCSV(pathSet, "output.csv");
+    multiVectorToCSV(observations, "output.csv");
+    
     return;
 }
 

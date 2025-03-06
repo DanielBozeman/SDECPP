@@ -396,4 +396,57 @@ std::vector<double> simulatedAnnealingDriftEstimation(stochasticModel model, int
     return model.parameters[parameterSet];
 }
 
+modelCostFunction driftCost(stochasticModel model, std::vector<double> observations, int numSims){
+    std::vector<std::vector<double>> approximations;
+
+    multipleEulerMaruyamaByReference(approximation, model, numSims);
+}
+
+std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction){
+    double temperature = startingTemp;
+
+    double cost;
+    double prob;
+    double oldCost = std::numeric_limits<double>::infinity();
+
+    stochasticModel currentModel = model;
+    stochasticModel bestModel = model;
+    stochasticModel newModel = model;
+
+    double bestCost = std::numeric_limits<double>::infinity();
+
+    while(temperature > tempLimit){
+        for(int i = 0; i < stepsAtTemp; i++){
+
+            cost = costFunction(currentModel, observations, int numSimsPerStep);
+
+            if((cost == 0 || cost == std::numeric_limits<double>::infinity()) && (oldCost == 0 || oldCost == std::numeric_limits<double>::infinity())){
+                newModel.parameters[parameterSet] = randomParam(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet]);
+                continue;
+            }else{
+                prob = acceptanceProbability(cost, oldCost, temperature);       
+            }
+
+            if(prob > randomGenerator.d01()){
+                oldCost = cost;
+                currentModel = newModel;
+            }
+
+            if(cost < bestCost){
+                bestModel = currentModel;
+                bestCost = cost;
+            }
+
+            newModel.parameters[parameterSet] = parameterNeighbor(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet], currentModel.parameterSteps[parameterSet]);
+        }
+
+        temperature *= coolingRate;
+        std::cout << "\nTemperature: " << temperature;
+    }
+
+    model = bestModel;
+    
+    return model.parameters[parameterSet];
+}
+
 

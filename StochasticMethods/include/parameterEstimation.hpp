@@ -6,6 +6,8 @@
 
 typedef long double (*costFunction)(std::vector<std::vector<double>>&, std::vector<double>&);
 
+typedef long double (*modelCostFunction)(stochasticModel model, std::vector<double>&, int);
+
 long double multiVectorRMSE(std::vector<std::vector<double>>& simulations, std::vector<double>& actual);
 double sampleMean(std::vector<double>& observations);
 double sampleVariance(std::vector<double>& observations);
