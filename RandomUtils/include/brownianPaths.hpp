@@ -9,6 +9,10 @@ Xoshiro256plus timeSeedRand();
 
 extern Xoshiro256plus randomGenerator;
 
+double inverseNormal(double p);
+
+float sqrt1(const float &n);
+
 class randomPathMaker{
     private:
     public:

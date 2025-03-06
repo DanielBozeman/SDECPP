@@ -6,6 +6,8 @@ import csv
 
 
 def standardPlotter():
+    print("starting")
+    
     df = pd.read_csv("build/output.csv", index_col=False)
 
     df.drop(df.tail(1).index,inplace=True) 
@@ -202,12 +204,12 @@ def trueVsEst():
 
 if __name__ == "__main__":
     #multiGrayLastFull()
-    #standardPlotter()
+    standardPlotter()
     #multiGrayAveragePlot()
     #twoVectorAgainst()
     #twoVectorHist()
     #normalPlotter()
-    trueVsEst()
+    #trueVsEst()
 
     
     

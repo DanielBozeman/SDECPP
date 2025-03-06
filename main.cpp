@@ -544,8 +544,8 @@ void rewriteTest(){
     std::vector<double> times = {};
 
     double start = 0;
-    double end = 1;
-    double dt = 0.0001;
+    double end = 10;
+    double dt = 1;
     
     linearlySpacedVector(times, start, end, dt);
 
@@ -553,18 +553,28 @@ void rewriteTest(){
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
     
-    auto startTime = std::chrono::high_resolution_clock::now();
+    randomPathMaker rp = randomPathMaker();
 
-    for(int i = 0; i < 5000; i++){
-        eulerMaruyamaByReferense(output,model);
-        //output = eulerMaruyama(model);
-    } 
+    std::vector<double> path = rp.makePath(times[0], times.back() + dt, dt);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    std::vector<std::vector<double>> pathSet = {};
 
-    std::cout << "Execution time: " << duration.count() << " milliseconds" << std::endl;
+    double sum = 0;
 
+    int numSims = 1000000;
+
+    path = rp.makePath(times[0], times.back() + dt, dt); 
+
+    for(int i = 0; i < numSims; i++){
+        path = rp.makePath(times[0], times.back()+ dt, dt);
+        sum += path.back();
+    }
+
+    sum = sum / numSims;
+
+    std::cout << "\nAverage dW: " << sum;
+
+    //multiVectorToCSV(pathSet, "output.csv");
     return;
 }
 

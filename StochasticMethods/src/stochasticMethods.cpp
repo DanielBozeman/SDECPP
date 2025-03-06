@@ -94,15 +94,12 @@ void eulerMaruyamaByReferense(std::vector<double> &approximation, stochasticMode
         brownianPath = rp.makePath(model.timeInterval[0], model.timeInterval.back() + dt, dt);
     }
 
-    approximation.reserve((model.timeInterval.back() - model.timeInterval[0])/dt);
-
-    //std::cout << "\nPath size: " << brownianPath.size(); 
-
     for(int i = 1; i < model.timeInterval.size(); i++){
         double prevValue = approximation[i-1];
         double prevTime = model.timeInterval[i-1];
         double dW = brownianPath[i] - brownianPath[i-1];
-        approximation.push_back((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
+        approximation[i] = ((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
+        std::cout << "\ndW: " << dW;
     }
 
     return;
