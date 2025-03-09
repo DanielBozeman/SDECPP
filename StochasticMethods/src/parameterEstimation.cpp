@@ -63,6 +63,29 @@ long double multiVectorRMSE(std::vector<std::vector<double>>& simulations, std::
     return rmse(average, actual);
 }
 
+long double multiVectorMSE(std::vector<std::vector<double>>& simulations, std::vector<double>& actual){
+    
+    auto squareError = [](double a, double b){
+        auto e = a-b;
+        return e*e;
+    };
+
+    double averageVal;
+
+    long double sum = 0;
+
+    for(int i = 0; i < actual.size(); i++){
+        averageVal = 0;
+        for(int j = 0; j < simulations.size(); j++){
+            averageVal += simulations[j][i];
+        }
+
+        sum += squareError((averageVal/simulations.size()), actual[i]);
+    }
+
+    return (sum/actual.size());
+    
+}
 //Finds the set of returns of a set of simulated paths
 //Return is organized as the first coordinate being the time and second being the particular return returns[timeStep][return]
 std::vector<std::vector<double>> findReturns(std::vector<std::vector<double>>& simulations){
@@ -396,10 +419,14 @@ std::vector<double> simulatedAnnealingDriftEstimation(stochasticModel model, int
     return model.parameters[parameterSet];
 }
 
-modelCostFunction driftCost(stochasticModel model, std::vector<double> observations, int numSims){
+long double driftCost(stochasticModel model, std::vector<double> &observations, int numSims){
     std::vector<std::vector<double>> approximations;
 
-    multipleEulerMaruyamaByReference(approximation, model, numSims);
+    multipleEulerMaruyamaByReference(approximations, model, numSims);
+
+    long double mse = multiVectorMSE(approximations, observations);
+
+    return mse;
 }
 
 std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction){
@@ -418,13 +445,16 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
     while(temperature > tempLimit){
         for(int i = 0; i < stepsAtTemp; i++){
 
-            cost = costFunction(currentModel, observations, int numSimsPerStep);
+            cost = costFunction(newModel, observations, numSimsPerStep);
+
+            std::cout << "\nCur cost: " << cost;
 
             if((cost == 0 || cost == std::numeric_limits<double>::infinity()) && (oldCost == 0 || oldCost == std::numeric_limits<double>::infinity())){
                 newModel.parameters[parameterSet] = randomParam(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet]);
                 continue;
             }else{
-                prob = acceptanceProbability(cost, oldCost, temperature);       
+                prob = acceptanceProbability(cost, oldCost, temperature);  
+                //std::cout << "\nCur prob: " << prob;     
             }
 
             if(prob > randomGenerator.d01()){
@@ -433,6 +463,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
             }
 
             if(cost < bestCost){
+                //std::cout << "\nBest cost: " << cost;
                 bestModel = currentModel;
                 bestCost = cost;
             }
@@ -441,7 +472,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
         }
 
         temperature *= coolingRate;
-        std::cout << "\nTemperature: " << temperature;
+        //std::cout << "\nTemperature: " << temperature;
     }
 
     model = bestModel;

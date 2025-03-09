@@ -52,21 +52,26 @@ stochasticModel fitBlackScholes(std::string fileName, int dataColumn, int dataSt
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, constants, constantLimits, constantSteps);
 
+    stochasticModel noVarModel = stochasticModel(alphaFunction, zeroFunction, initialValue, times, constants, constantLimits, constantSteps);
+
     for(int i = 0; i < 5; i++){
 
         std::cout << "\nStarting Drift Estimation";
-        model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 150, 1, multiVectorRMSE);
+        
+        model.betaFunction = zeroFunction;
+        model.parameters[0] = paramEstimation(model, 0, stockCloses, 1, 2000, 0.9, 150, 100, driftCost);
         
         //model.parameters[0] = {0.000865574};
         std::cout << "\nDrift Est: " << model.parameters[0][0];
-        std::cout << "\nStarting Vol Estimation";
+        //std::cout << "\nStarting Vol Estimation";
 
         model.betaFunction = betaFunction;
-        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 200, 10, returnComparison);
-        
-        std::cout << "\n\n For Run " << i;
-        std::cout << "\nDrift Est: " << model.parameters[0][0];
-        std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
+        //model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 200, 10, returnComparison);
+        model.parameters[1] = {0};
+
+        //std::cout << "\n\n For Run " << i;
+        //std::cout << "\nDrift Est: " << model.parameters[0][0];
+        //std::cout << "\nVolatility Est: " << model.parameters[1][0]; 
 
         for(int j = 0; j < constantSteps.size(); j++){
             for(int k = 0; k < constantSteps[j].size(); k++){
@@ -77,9 +82,9 @@ stochasticModel fitBlackScholes(std::string fileName, int dataColumn, int dataSt
         model.parameterSteps = constantSteps;
     }
 
-    double stat = testFit(model, stockCloses, 90);
+    //double stat = testFit(model, stockCloses, 90);
 
-    std::cout << "\nTest stat is " << stat;
+    //std::cout << "\nTest stat is " << stat;
 
     multiVectorToCSV({stockCloses}, "dataOutput.csv");
 

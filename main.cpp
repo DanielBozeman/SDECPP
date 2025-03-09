@@ -551,14 +551,11 @@ void rewriteTest(){
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
 
-    std::vector<std::vector<double>> observations;
+    std::vector<std::vector<double>> sims = {{43.6,44.4,45.2,46,46.8}};
 
+    std::vector<double> actual = {41,45,49,47,44};
 
-    multipleEulerMaruyamaByReference(observations, model, 100);
-
-    multiVectorToCSV(observations, "output.csv");
-    
-    return;
+    std::cout << "\nMSE: " << multiVectorMSE(sims, actual);
 }
 
 int main(){
@@ -569,7 +566,7 @@ int main(){
     //driftVolFinder();
     //stats();
     //fitOrnstein("StockData/SPX_Post61.csv", 6, -500);
-    //fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
+    fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
     //rmseTest();^
     //eulerMaruyamaTest(500);
     //createPath();
@@ -581,5 +578,5 @@ int main(){
     //fitRandom("StockData/SPX_Post61.csv", 6, -500);
     //testBS();
 
-    rewriteTest();
+    //rewriteTest();
 }
