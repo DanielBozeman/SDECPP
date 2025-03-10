@@ -419,17 +419,112 @@ std::vector<double> simulatedAnnealingDriftEstimation(stochasticModel model, int
     return model.parameters[parameterSet];
 }
 
-long double driftCost(stochasticModel model, std::vector<double> &observations, int numSims){
+/** -----------------------------------------------------------
+ * @brief Cost function used for the drift function, finds MSE between model and real values
+ * 
+ * @param model SDE model to be used in the drift estimation
+ * @param observations Data to be fit against 
+ * @param numSims Number of simulations to use in the test, higher is more accurate
+ * @param params Optional parameters, not used
+ * @return long double MSE of model against the real data 
+--------------------------------------------------------------- */
+long double driftCost(stochasticModel model, std::vector<double> &observations, int numSims, std::vector<double> params){
+
+    stochasticModel testModel = model;
+    testModel.betaFunction = zeroFunction;
+
     std::vector<std::vector<double>> approximations;
 
-    multipleEulerMaruyamaByReference(approximations, model, numSims);
+    multipleEulerMaruyamaByReference(approximations, testModel, numSims);
 
     long double mse = multiVectorMSE(approximations, observations);
 
     return mse;
 }
 
-std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction){
+long double varianceCost(stochasticModel model, std::vector<double>& observations, int numSims, std::vector<double> &params){
+   
+   auto binarySearch = [](std::vector<double>& array, int value){
+        int low = 0;
+        int high = array.size() - 1;
+        int rank = 0;
+
+        while(low <= high){
+            int mid = low + (high - low)/2;
+
+            if(array[mid] < value){
+                rank = mid + 1;
+                low = mid + 1;
+            }else{
+                high = mid - 1;
+            }
+        }
+
+        return rank;
+   };
+
+   stochasticModel noVarModel = model;
+
+   model.betaFunction = zeroFunction;
+
+   std::vector<double> noDriftObs, noVarObs;
+
+   eulerMaruyamaByReference(noVarObs, noVarModel);
+
+   noDriftObs.resize(noVarObs.size());
+
+   for(int i = 0; i < noDriftObs.size(); i++){
+    noDriftObs[i] = observations[i] - noVarObs[i];
+   }
+
+    std::vector<double> innerTimes;
+
+   std::vector<std::vector<double>> approximations;
+
+   double startTime, endTime;
+
+   std::vector<double> endValues;
+
+   endValues.resize(approximations.size());
+   
+    for(int i = 1; i < observations.size(); i++){
+        stochasticModel innerModel = model;
+        innerModel.initialValue = observations[i - 1];
+
+        startTime = model.timeInterval[i-1];
+        endTime = model.timeInterval[i];
+
+        linearlySpacedVectorBySize(innerTimes, startTime, endTime, params[0]);
+
+        innerModel.timeInterval = innerTimes;
+        
+        multipleEulerMaruyamaByReference(approximations, innerModel, numSims);
+
+        for(int j = 0; j < approximations.size(); j++){
+            endValues[j] = approximations[j].back() - noVarObs[i];
+        }
+
+   } 
+
+   return 0;
+}
+
+/** -----------------------------------------------------------
+ * @brief Estimates the parameters of the alpha or beta function of a SDE model  
+ * 
+ * @param model Stochastic model with unkown parameters
+ * @param parameterSet Parameter set to be estimated, 0 for alpha parameters, 1 for beta parameters
+ * @param observations Data to be fit against
+ * @param numSimsPerStep Number of simulations for each evalution of the cost function 
+ * @param startingTemp Starting temperature of the simulated annealing algorithm    
+ * @param coolingRate Rate at which the temperature drops at each step of the algorithm
+ * @param stepsAtTemp Iterations of random parameters checked at each temperature   
+ * @param tempLimit Lowest acceptable temperature, algorithm will stop at this temperature  
+ * @param costFunction Cost function to be minimized 
+ * @param optionalParams Optional parameters for the cost function 
+ * @return std::vector<double> Fit parameters for the selected data set
+--------------------------------------------------------------- */
+std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams){
     double temperature = startingTemp;
 
     double cost;
@@ -445,7 +540,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
     while(temperature > tempLimit){
         for(int i = 0; i < stepsAtTemp; i++){
 
-            cost = costFunction(newModel, observations, numSimsPerStep);
+            cost = costFunction(newModel, observations, numSimsPerStep, optionalParams);
 
             std::cout << "\nCur cost: " << cost;
 

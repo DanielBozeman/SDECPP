@@ -527,6 +527,25 @@ void testBS(){
 
 //--------------------------------------------
 
+int binarySearch(std::vector<double>& array, double value){
+    int low = 0;
+    int high = array.size() - 1;
+    int rank = 0;
+
+    while(low <= high){
+        int mid = low + (high - low)/2;
+
+        if(array[mid] < value){
+            rank = mid + 1;
+            low = mid + 1;
+        }else{
+            high = mid - 1;
+        }
+    }
+
+    return rank;
+}
+
 void rewriteTest(){
 
     auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
@@ -551,11 +570,11 @@ void rewriteTest(){
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
 
-    std::vector<std::vector<double>> sims = {{43.6,44.4,45.2,46,46.8}};
+    std::vector<double> array = {-4,0,0,1,3,6,9,10,13,500};
 
-    std::vector<double> actual = {41,45,49,47,44};
+    double input = 5;
 
-    std::cout << "\nMSE: " << multiVectorMSE(sims, actual);
+    std::cout << "\nRank: " << binarySearch(array, 50.35);
 }
 
 int main(){
@@ -566,7 +585,7 @@ int main(){
     //driftVolFinder();
     //stats();
     //fitOrnstein("StockData/SPX_Post61.csv", 6, -500);
-    fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
+    //fitBlackScholes("StockData/SPX_Post61.csv", 6, -500);
     //rmseTest();^
     //eulerMaruyamaTest(500);
     //createPath();
@@ -578,5 +597,5 @@ int main(){
     //fitRandom("StockData/SPX_Post61.csv", 6, -500);
     //testBS();
 
-    //rewriteTest();
+    rewriteTest();
 }

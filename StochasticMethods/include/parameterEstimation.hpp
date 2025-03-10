@@ -6,7 +6,7 @@
 
 typedef long double (*costFunction)(std::vector<std::vector<double>>&, std::vector<double>&);
 
-typedef long double (*modelCostFunction)(stochasticModel model, std::vector<double>&, int);
+typedef long double (*modelCostFunction)(stochasticModel model, std::vector<double>&, int, std::vector<double>);
 
 
 
@@ -23,6 +23,6 @@ double acceptanceProbability(double newState, double oldState, double temperatur
 std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit, costFunction cost);
 std::vector<double> simulatedAnnealingDriftEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit, costFunction cost);
 
-long double driftCost(stochasticModel model, std::vector<double> &observations, int numSims);
-std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction);
+long double driftCost(stochasticModel model, std::vector<double> &observations, int numSims, std::vector<double> optionalParams = {});
+std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams = {});
 #endif // __PARAMETERESTIMATION_H__

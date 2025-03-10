@@ -24,6 +24,8 @@ double zeroFunction(double& value, double& time, std::vector<double>& parameters
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h);
 
+void linearlySpacedVectorBySize(std::vector<double> &xs, double a, double b, std::size_t N);
+
 std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath = {});
 
 std::vector<double> eulerMaruyama(stochastic_function alphaFunction, stochastic_function betaFunction, double initialValue, std::vector<double> timeInterval, std::vector<double> parameters, std::vector<double> brownianPath = {});

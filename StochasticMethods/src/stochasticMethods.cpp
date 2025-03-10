@@ -33,6 +33,15 @@ void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h)
     }
 } 
 
+void linearlySpacedVectorBySize(std::vector<double> &xs, double a, double b, std::size_t N){
+    double h = (b - a) / static_cast<double>(N-1);
+    std::vector<double>::iterator x;
+    double val;
+    for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h) {
+        *x = val;
+    }
+} 
+
 std::vector<double> eulerMaruyama(stochasticModel model, std::vector<double> brownianPath)
 {
     std::vector<double> approximation = {model.initialValue};

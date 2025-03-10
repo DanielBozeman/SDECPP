@@ -57,8 +57,7 @@ stochasticModel fitBlackScholes(std::string fileName, int dataColumn, int dataSt
     for(int i = 0; i < 5; i++){
 
         std::cout << "\nStarting Drift Estimation";
-        
-        model.betaFunction = zeroFunction;
+      
         model.parameters[0] = paramEstimation(model, 0, stockCloses, 1, 2000, 0.9, 150, 100, driftCost);
         
         //model.parameters[0] = {0.000865574};
