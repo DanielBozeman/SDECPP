@@ -35,6 +35,7 @@ void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h)
 
 void linearlySpacedVectorBySize(std::vector<double> &xs, double a, double b, std::size_t N){
     double h = (b - a) / static_cast<double>(N-1);
+    xs.resize(N);
     std::vector<double>::iterator x;
     double val;
     for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h) {
@@ -111,6 +112,19 @@ void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticMode
     }
 
     return;
+}
+
+void eulerMaruyamaWithin(std::vector<double> &approximation, stochasticModel model, int numDivisions, std::vector<double> brownianPath){
+    std::vector<double> newTimes;
+
+    linearlySpacedVectorBySize(newTimes, model.timeInterval[0], model.timeInterval.back(), (model.timeInterval.size()-1)*numDivisions);
+
+    stochasticModel newModel = model;
+    newModel.timeInterval = newTimes;
+
+    eulerMaruyamaByReference(approximation, newModel);
+
+
 }
 
 void multipleEulerMaruyamaByReference(std::vector<std::vector<double>> &approximations, stochasticModel model, int numSimulations, std::vector<std::vector<double>> brownianPaths){

@@ -560,21 +560,21 @@ void rewriteTest(){
 
     double initialValue = 1;
 
-    std::vector<double> times = {};
+    std::vector<double> times;
 
     double start = 0;
     double end = 1;
-    double dt = 0.0001;
-    
+    double dt = 1;
+    double divisions = 10;
+
     linearlySpacedVector(times, start, end, dt);
 
     stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
 
-    std::vector<double> array = {-4,0,0,1,3,6,9,10,13,500};
+    std::vector<double> output;
 
-    double input = 5;
+    eulerMaruyamaWithin(output, model, 10);
 
-    std::cout << "\nRank: " << binarySearch(array, 50.35);
 }
 
 int main(){
