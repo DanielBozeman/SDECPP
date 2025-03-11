@@ -34,8 +34,8 @@ void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h)
 } 
 
 void linearlySpacedVectorBySize(std::vector<double> &xs, double a, double b, std::size_t N){
-    double h = (b - a) / static_cast<double>(N-1);
-    xs.resize(N);
+    double h = (b - a) / static_cast<double>(N);
+    xs.resize(N+1);
     std::vector<double>::iterator x;
     double val;
     for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h) {
@@ -122,15 +122,23 @@ void eulerMaruyamaWithin(std::vector<double> &approximation, stochasticModel mod
     stochasticModel newModel = model;
     newModel.timeInterval = newTimes;
 
-    eulerMaruyamaByReference(approximation, newModel);
+    for(int i = 0; i < newTimes.size(); i++){
+        std::cout << "\n" << newTimes[i];
+    }
 
+    std::vector<double> longApproximation;
 
+    eulerMaruyamaByReference(longApproximation, newModel);
+
+    approximation.resize(model.timeInterval.size());
+
+    for(int i = 0; i < model.timeInterval.size()*numDivisions; i += numDivisions){
+        approximation[i/numDivisions] = longApproximation[i];
+        //std::cout << "\n" << newModel.timeInterval[i];
+    }
 }
 
 void multipleEulerMaruyamaByReference(std::vector<std::vector<double>> &approximations, stochasticModel model, int numSimulations, std::vector<std::vector<double>> brownianPaths){
-    double prevValue;
-    double prevTime;
-    double dW;
     
     approximations.resize(numSimulations, std::vector<double>(model.timeInterval.size()));
 
@@ -140,9 +148,7 @@ void multipleEulerMaruyamaByReference(std::vector<std::vector<double>> &approxim
         randomPathMaker rp = randomPathMaker();
         brownianPaths = rp.makeMultiplePaths(model.timeInterval[0], model.timeInterval.back() + dt, dt, numSimulations);
     }
-
-    approximations.reserve(((model.timeInterval.back() - model.timeInterval[0])/dt) * brownianPaths.size());
-    
+   
     std::vector<double> approximation;
 
     for(int i = 0; i < numSimulations; i++){
@@ -151,6 +157,27 @@ void multipleEulerMaruyamaByReference(std::vector<std::vector<double>> &approxim
 
         approximations[i] = approximation;
     }    
+}
+
+void multipleEulerMaruyamaWithin(std::vector<std::vector<double>> &approximations, stochasticModel model, int numDivisions, int numSimulations, std::vector<std::vector<double>> brownianPaths){
+
+    approximations.resize(numSimulations, std::vector<double>(model.timeInterval.size()));
+
+    double dt = model.timeInterval[1] - model.timeInterval[0];
+
+    if(brownianPaths.size() == 0){
+        randomPathMaker rp = randomPathMaker();
+        brownianPaths = rp.makeMultiplePaths(model.timeInterval[0], model.timeInterval.back() + dt, dt, numSimulations);
+    }
+   
+    std::vector<double> approximation;
+
+    for(int i = 0; i < numSimulations; i++){
+        
+        eulerMaruyamaWithin(approximation, model, numDivisions, brownianPaths[i]);
+
+        approximations[i] = approximation;
+    }
 }
 
 std::vector<std::vector<double>> multipleEulerMaruyama(stochasticModel model, int numSimulations, std::vector<std::vector<double>> brownianPaths){

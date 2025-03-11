@@ -419,6 +419,18 @@ std::vector<double> simulatedAnnealingDriftEstimation(stochasticModel model, int
     return model.parameters[parameterSet];
 }
 
+
+
+
+
+
+
+
+
+//--------------------------------------------------------------------------------------------
+
+
+
 /** -----------------------------------------------------------
  * @brief Cost function used for the drift function, finds MSE between model and real values
  * 

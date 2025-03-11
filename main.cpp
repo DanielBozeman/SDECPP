@@ -564,16 +564,22 @@ void rewriteTest(){
 
     double start = 0;
     double end = 1;
-    double dt = 1;
-    double divisions = 10;
+    double dt = 0.1;
+    double divisions = 2;
 
     linearlySpacedVector(times, start, end, dt);
 
-    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters);
+    stochasticModel model = stochasticModel(alphaFunction, zeroFunction, initialValue, times, parameters);
 
     std::vector<double> output;
 
-    eulerMaruyamaWithin(output, model, 10);
+    std::vector<double> emOutput;
+
+    eulerMaruyamaWithin(output, model, divisions);
+
+    eulerMaruyamaByReference(emOutput, model);
+
+    std::cout << "\nWithin: " << output.back() << "\nStraight: " << emOutput.back();
 
 }
 
