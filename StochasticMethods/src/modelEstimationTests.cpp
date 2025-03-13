@@ -58,15 +58,15 @@ stochasticModel fitBlackScholes(std::string fileName, int dataColumn, int dataSt
 
         std::cout << "\nStarting Drift Estimation";
       
-        model.parameters[0] = paramEstimation(model, 0, stockCloses, 1, 2000, 0.9, 150, 100, driftCost);
+        //model.parameters[0] = paramEstimation(model, 0, stockCloses, 1, 2000, 0.9, 150, 100, driftCost);
         
-        //model.parameters[0] = {0.000865574};
-        std::cout << "\nDrift Est: " << model.parameters[0][0];
-        //std::cout << "\nStarting Vol Estimation";
+        model.parameters[0] = {0.000865574};
+        //std::cout << "\nDrift Est: " << model.parameters[0][0];
+        std::cout << "\nStarting Vol Estimation";
 
         model.betaFunction = betaFunction;
         //model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 200, 10, returnComparison);
-        model.parameters[1] = {0};
+        model.parameters[1] = paramEstimation(model, 1, stockCloses, 500, 20, 0.9, 200, 10, varianceCost);
 
         //std::cout << "\n\n For Run " << i;
         //std::cout << "\nDrift Est: " << model.parameters[0][0];
@@ -147,17 +147,20 @@ stochasticModel fitOrnstein(std::string fileName, int dataColumn, int dataStart,
 
     stochasticModel baseModel = model;
 
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 1; i++){
 
         std::cout << "\nStarting Drift Estimation";
-        model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 150, 1, multiVectorRMSE);
-        
+        //model.parameters[0] = simulatedAnnealingDriftEstimation(model, 0, stockCloses, 1, 200, 0.9, 150, 1, multiVectorRMSE);
+        model.parameters[0] = paramEstimation(model, 0, stockCloses, 1, 200, 0.9, 150, 1, driftCost);
+
         //model.parameters[0] = {0.000865574};
         std::cout << "\nDrift Est: " << model.parameters[0][0] << "   " << model.parameters[0][1];
+
         std::cout << "\nStarting Vol Estimation";
 
-        model.betaFunction = betaFunction;
-        model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 150, 14, returnComparison);
+        //model.betaFunction = betaFunction;
+        //model.parameters[1] = simulatedAnnealingVolEstimation(model, 1, stockCloses, 500, 20, 0.9, 150, 14, returnComparison);
+        model.parameters[1] = paramEstimation(model, 1, stockCloses, 500, 20, 0.9, 150, 14, varianceCost, {100, 10});
         
         std::cout << "\n\n For Run " << i;
         std::cout << "\nDrift Est: " << model.parameters[0][0] << " " << model.parameters[0][1];

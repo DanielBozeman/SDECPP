@@ -557,6 +557,8 @@ void rewriteTest(){
     };
 
     std::vector<std::vector<double>> parameters = {{1},{0.2}};
+    std::vector<std::vector<std::vector<double>>> parameterLimits = {{{0,2}},{{0,1}}};
+    std::vector<std::vector<double>> parameterSteps = {{0},{0}};
 
     double initialValue = 1;
 
@@ -564,23 +566,20 @@ void rewriteTest(){
 
     double start = 0;
     double end = 1;
-    double dt = 0.1;
+    double dt = 0.05;
     double divisions = 2;
 
     linearlySpacedVector(times, start, end, dt);
 
-    stochasticModel model = stochasticModel(alphaFunction, zeroFunction, initialValue, times, parameters);
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, parameters, parameterLimits, parameterSteps);
 
     std::vector<double> output;
 
     std::vector<double> emOutput;
 
-    eulerMaruyamaWithin(output, model, divisions);
+    eulerMaruyamaByReference(output, model);
 
-    eulerMaruyamaByReference(emOutput, model);
-
-    std::cout << "\nWithin: " << output.back() << "\nStraight: " << emOutput.back();
-
+    paramEstimation(model, 1, output, 1, 1, 0, 1, 0.5, varianceCost, {100, 10});
 }
 
 int main(){

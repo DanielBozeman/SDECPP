@@ -24,5 +24,6 @@ std::vector<double> simulatedAnnealingVolEstimation(stochasticModel model, int p
 std::vector<double> simulatedAnnealingDriftEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimulations, double startingTemperature, double coolingRate, int stepsAtTemp, double temperatureLimit, costFunction cost);
 
 long double driftCost(stochasticModel model, std::vector<double> &observations, int numSims, std::vector<double> optionalParams = {});
+long double varianceCost(stochasticModel model, std::vector<double> &observations, int numSims, std::vector<double> optionalParams = {});
 std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams = {});
 #endif // __PARAMETERESTIMATION_H__

@@ -1,6 +1,7 @@
 #include "parameterEstimation.hpp"
 #include "stochasticMethods.hpp"
 #include "RandomUtils.hpp"
+#include "FileUtils.hpp"
 #include <algorithm>
 #include <math.h>
 #include <cmath>
@@ -454,7 +455,7 @@ long double driftCost(stochasticModel model, std::vector<double> &observations, 
     return mse;
 }
 
-long double varianceCost(stochasticModel model, std::vector<double>& observations, int numSims, std::vector<double> &params){
+long double varianceCost(stochasticModel model, std::vector<double>& observations, int numSims, std::vector<double> params){
    
    auto binarySearch = [](std::vector<double>& array, int value){
         int low = 0;
@@ -476,49 +477,54 @@ long double varianceCost(stochasticModel model, std::vector<double>& observation
    };
 
    stochasticModel noVarModel = model;
+   noVarModel.betaFunction = zeroFunction;
+   
+   std::vector<double> noVarData;
+   eulerMaruyamaWithin(noVarData, noVarModel, 10);
 
-   model.betaFunction = zeroFunction;
+   std::vector<double> realVariance = {};
 
-   std::vector<double> noDriftObs, noVarObs;
-
-   eulerMaruyamaByReference(noVarObs, noVarModel);
-
-   noDriftObs.resize(noVarObs.size());
-
-   for(int i = 0; i < noDriftObs.size(); i++){
-    noDriftObs[i] = observations[i] - noVarObs[i];
+   for(int i = 1; i < observations.size(); i++){
+        realVariance.push_back((observations[i] - noVarData[i]) - (observations[i-1] - noVarData[i-1]));
    }
 
-    std::vector<double> innerTimes;
+   std::vector<std::vector<double>> simData;
+   std::vector<double> simVar;
 
-   std::vector<std::vector<double>> approximations;
+   stochasticModel simModel = model;
 
-   double startTime, endTime;
+   double chance = 0;
 
-   std::vector<double> endValues;
+   for(int i = 1; i < observations.size(); i++){
+        simVar = {};
 
-   endValues.resize(approximations.size());
-   
-    for(int i = 1; i < observations.size(); i++){
-        stochasticModel innerModel = model;
-        innerModel.initialValue = observations[i - 1];
+        double start = model.timeInterval[i-1];
+        double end = model.timeInterval[i];
+        std::vector<double> interTimes;
+        linearlySpacedVectorBySize(interTimes, start, end, params[0]);
 
-        startTime = model.timeInterval[i-1];
-        endTime = model.timeInterval[i];
+        simModel.timeInterval = interTimes;
+        simModel.initialValue = observations[i-1];
 
-        linearlySpacedVectorBySize(innerTimes, startTime, endTime, params[0]);
+        multipleEulerMaruyamaByReference(simData, simModel, params[1]);
 
-        innerModel.timeInterval = innerTimes;
-        
-        multipleEulerMaruyamaByReference(approximations, innerModel, numSims);
-
-        for(int j = 0; j < approximations.size(); j++){
-            endValues[j] = approximations[j].back() - noVarObs[i];
+        for(int j = 0; j < simData.size(); j++){
+            simVar.push_back((simData[j].back() - noVarData[i]) - (simData[j][0] - noVarData[i-1]));
         }
 
-   } 
+        double var = sampleVariance(simVar);
+        double mean = sampleMean(simVar);
 
-   return 0;
+        //std::cout << "\nVar: " << var << "\nMean: " << mean;
+
+        double pdf = normalPDF(realVariance[i-1], mean, var);
+
+        //std::cout << "\nPDF: " << pdf;
+
+        chance += log(pdf);
+   }
+
+   return chance;
 }
 
 /** -----------------------------------------------------------

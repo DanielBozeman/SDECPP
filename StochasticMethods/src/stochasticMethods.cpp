@@ -94,7 +94,7 @@ std::vector<double> eulerMaruyama(stochastic_function alphaFunction, stochastic_
 void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticModel model, std::vector<double> brownianPath){
     
     approximation.resize(model.timeInterval.size());
-    
+
     approximation[0] = model.initialValue;
 
     double dt = model.timeInterval[1] - model.timeInterval[0];
@@ -122,10 +122,6 @@ void eulerMaruyamaWithin(std::vector<double> &approximation, stochasticModel mod
     stochasticModel newModel = model;
     newModel.timeInterval = newTimes;
 
-    for(int i = 0; i < newTimes.size(); i++){
-        std::cout << "\n" << newTimes[i];
-    }
-
     std::vector<double> longApproximation;
 
     eulerMaruyamaByReference(longApproximation, newModel);
@@ -152,10 +148,7 @@ void multipleEulerMaruyamaByReference(std::vector<std::vector<double>> &approxim
     std::vector<double> approximation;
 
     for(int i = 0; i < numSimulations; i++){
-        
-        eulerMaruyamaByReference(approximation, model, brownianPaths[i]);
-
-        approximations[i] = approximation;
+        eulerMaruyamaByReference(approximations[i], model, brownianPaths[i]);
     }    
 }
 
