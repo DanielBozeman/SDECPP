@@ -524,7 +524,7 @@ long double varianceCost(stochasticModel model, std::vector<double>& observation
         chance += log(pdf);
    }
 
-   return chance;
+   return -1 * chance;
 }
 
 /** -----------------------------------------------------------
@@ -543,6 +543,11 @@ long double varianceCost(stochasticModel model, std::vector<double>& observation
  * @return std::vector<double> Fit parameters for the selected data set
 --------------------------------------------------------------- */
 std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams){
+    
+    int moveLimit = 500;
+
+    int notMovedIn = 0;
+    
     double temperature = startingTemp;
 
     double cost;
@@ -558,12 +563,16 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
     while(temperature > tempLimit){
         for(int i = 0; i < stepsAtTemp; i++){
 
+            notMovedIn++;
+
             cost = costFunction(newModel, observations, numSimsPerStep, optionalParams);
 
-            std::cout << "\nCur cost: " << cost;
+            //std::cout << "\nCur cost: " << cost;
+            //std::cout << "\nCur param" << newModel.parameters[0][0];
 
-            if((cost == 0 || cost == std::numeric_limits<double>::infinity()) && (oldCost == 0 || oldCost == std::numeric_limits<double>::infinity())){
+            if((cost == 0 || abs(cost) == std::numeric_limits<double>::infinity()) && (oldCost == 0 || abs(oldCost) == std::numeric_limits<double>::infinity())){
                 newModel.parameters[parameterSet] = randomParam(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet]);
+                //std::cout << "\nIndeterminate cost!";
                 continue;
             }else{
                 prob = acceptanceProbability(cost, oldCost, temperature);  
@@ -576,16 +585,21 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
             }
 
             if(cost < bestCost){
-                //std::cout << "\nBest cost: " << cost;
+                notMovedIn = 0;
+                std::cout << "\nBest cost: " << cost;
                 bestModel = currentModel;
                 bestCost = cost;
+            }
+
+            if(notMovedIn > moveLimit){
+                return bestModel.parameters[parameterSet];
             }
 
             newModel.parameters[parameterSet] = parameterNeighbor(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet], currentModel.parameterSteps[parameterSet]);
         }
 
         temperature *= coolingRate;
-        //std::cout << "\nTemperature: " << temperature;
+        std::cout << "\nTemperature: " << temperature;
     }
 
     model = bestModel;
@@ -593,4 +607,9 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
     return model.parameters[parameterSet];
 }
 
+double findLikelihood(stochasticModel model, std::vector<double> observations){
+    std::vector<double> estimate;
+
+    return 0;
+}
 

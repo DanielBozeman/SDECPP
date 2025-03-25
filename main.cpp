@@ -558,7 +558,7 @@ void rewriteTest(){
 
     std::vector<std::vector<double>> parameters = {{1},{0.2}};
     std::vector<std::vector<std::vector<double>>> parameterLimits = {{{0,2}},{{0,1}}};
-    std::vector<std::vector<double>> parameterSteps = {{0},{0}};
+    std::vector<std::vector<double>> parameterSteps = {{1},{1}};
 
     double initialValue = 1;
 
@@ -566,7 +566,7 @@ void rewriteTest(){
 
     double start = 0;
     double end = 1;
-    double dt = 0.05;
+    double dt = 0.005;
     double divisions = 2;
 
     linearlySpacedVector(times, start, end, dt);
@@ -579,7 +579,17 @@ void rewriteTest(){
 
     eulerMaruyamaByReference(output, model);
 
-    paramEstimation(model, 1, output, 1, 1, 0, 1, 0.5, varianceCost, {100, 10});
+    model.parameters[0] = {0};
+
+    model.parameters[0] = paramEstimation(model, 0, output, 1, 200, 0.99, 250, 15, driftCost);
+
+    std::cout << "\nDrift: " << model.parameters[0][0];
+
+    model.parameters[1] = {0.0001};
+
+    model.parameters[1] = paramEstimation(model, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {100, 10});
+
+    std::cout << "\nParam: " << model.parameters[1][0];
 }
 
 int main(){
