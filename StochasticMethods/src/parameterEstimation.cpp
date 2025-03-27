@@ -456,7 +456,7 @@ long double driftCost(stochasticModel model, std::vector<double> &observations, 
 }
 
 long double varianceCost(stochasticModel model, std::vector<double>& observations, int numSims, std::vector<double> params){
-   
+  
    auto binarySearch = [](std::vector<double>& array, int value){
         int low = 0;
         int high = array.size() - 1;
@@ -607,9 +607,66 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
     return model.parameters[parameterSet];
 }
 
-double findLikelihood(stochasticModel model, std::vector<double> observations){
-    std::vector<double> estimate;
+double findLikelihood(stochasticModel model, std::vector<double> observations, std::vector<double> params){  
+   auto binarySearch = [](std::vector<double>& array, int value){
+        int low = 0;
+        int high = array.size() - 1;
+        int rank = 0;
 
-    return 0;
+        while(low <= high){
+            int mid = low + (high - low)/2;
+
+            if(array[mid] < value){
+                rank = mid + 1;
+                low = mid + 1;
+            }else{
+                high = mid - 1;
+            }
+        }
+
+        return rank;
+   };
+
+   stochasticModel noVarModel = model;
+   noVarModel.betaFunction = zeroFunction;
+   
+   std::vector<double> noVarData;
+   eulerMaruyamaWithin(noVarData, noVarModel, 10);
+
+   std::vector<double> realVariance = {};
+
+   for(int i = 1; i < observations.size(); i++){
+        realVariance.push_back((observations[i] - noVarData[i]) - (observations[i-1] - noVarData[i-1]));
+   }
+
+   std::vector<std::vector<double>> simData;
+   std::vector<double> simEnds;
+
+   stochasticModel simModel = model;
+
+   double chance = 0;
+
+   multipleEulerMaruyamaWithin(simData, simModel, params[0], params[1]);
+
+   for(int i = 1; i < observations.size(); i++){
+        simEnds = {};
+
+        for(int j = 0; j < simData.size(); j++){
+            simEnds.push_back(simData[i][j]);
+        }
+
+        double var = sampleVariance(simEnds);
+        double mean = sampleMean(simEnds);
+
+        //std::cout << "\nVar: " << var << "\nMean: " << mean;
+
+        double pdf = normalPDF(observations[i], mean, var);
+
+        //std::cout << "\nPDF: " << pdf;
+
+        chance += log(pdf);
+   }
+
+   return chance;
 }
 

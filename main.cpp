@@ -590,6 +590,101 @@ void rewriteTest(){
     model.parameters[1] = paramEstimation(model, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {100, 10});
 
     std::cout << "\nParam: " << model.parameters[1][0];
+
+    double likelihood = findLikelihood(model, output, {100,1000});
+
+    std::cout << "\n Likelihood: " << likelihood;
+}
+
+void testLikelihood(){
+    auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    auto betaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    auto fakeAlpha = [](double& value, double& time, std::vector<double>& parameters){
+        return(parameters[0] * value + parameters[1]);
+    };
+
+    std::vector<std::vector<double>> trueParameters = {{1},{0.2}};
+    std::vector<std::vector<std::vector<double>>> parameterLimits = {{{0,2}},{{0,1}}};
+    std::vector<std::vector<double>> parameterSteps = {{1},{1}};
+
+
+
+    std::vector<std::vector<double>> falseParameters = {{0,0},{0.001}};
+    std::vector<std::vector<std::vector<double>>> falseParameterLimits = {{{0,2},{-100,100}},{{0,1}}};
+    std::vector<std::vector<double>> falseParameterSteps = {{1,1},{1}};
+
+
+    double initialValue = 1;
+
+    std::vector<double> times;
+
+    double start = 0;
+    double end = 5;
+    double dt = 0.05;
+    double divisions = 2;
+
+    linearlySpacedVector(times, start, end, dt);
+
+    stochasticModel trueModel = stochasticModel(alphaFunction, betaFunction, initialValue, times, trueParameters, parameterLimits, parameterSteps);
+
+    stochasticModel falseModel = stochasticModel(fakeAlpha, betaFunction, initialValue, times, falseParameters, falseParameterLimits, falseParameterSteps);
+
+    std::vector<double> output;
+
+    eulerMaruyamaByReference(output, trueModel);
+
+    for(int i = 0; i < output.size(); i++){
+        std::cout << "\n" << output[i];
+    }
+
+    trueModel.parameters = {{0},{0.0001}};
+
+    trueModel.parameters[0] = paramEstimation(trueModel, 0, output, 1, 200, 0.99, 250, 15, driftCost);
+
+    std::cout << "\n===============================";
+
+    trueModel.parameters[1] = paramEstimation(trueModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+
+    std::cout << "\n===============================";
+
+
+    falseModel.parameters[0] = paramEstimation(falseModel, 0, output, 1, 200, 0.99, 250, 15, driftCost);
+
+    std::cout << "\n===============================";
+
+
+    falseModel.parameters[1] = paramEstimation(falseModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+
+    std::cout << "\n===============================";
+
+
+    std::cout << "\nFinding Likelihood";
+
+    std::vector<std::vector<double>> newParams = {{0.5},{0.2}};
+    stochasticModel newModel = trueModel;
+    newModel.parameters = newParams;
+
+    double chance1 = findLikelihood(trueModel, output, {100,5000});
+
+    double chance2 = findLikelihood(falseModel, output, {100,5000});
+
+    double chance3 = findLikelihood(newModel, output, {100,5000});
+
+    std::cout << "\nTrue Params: " << trueModel.parameters[0][0] << " and " << trueModel.parameters[1][0];
+
+    std::cout << "\nFalse Params: " << falseModel.parameters[0][0] << " " << falseModel.parameters[0][1] << " and " << falseModel.parameters[1][0];
+
+    std::cout << "\nTrue model likelihood: " << chance1;
+
+    std::cout << "\nFalse model likelihood: " << chance2;
+
+    std::cout << "\nNew model likelihood: " << chance3;
 }
 
 int main(){
@@ -612,5 +707,7 @@ int main(){
     //fitRandom("StockData/SPX_Post61.csv", 6, -500);
     //testBS();
 
-    rewriteTest();
+    //rewriteTest();
+
+    testLikelihood();
 }
