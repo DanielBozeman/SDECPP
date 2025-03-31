@@ -645,15 +645,14 @@ double findLikelihood(stochasticModel model, std::vector<double> observations, i
 
         for(int j = 0; j < simEnds.size(); j++){
             if(simEnds[j] <= simRight){
-                countLeft++;
                 countRight++;
             }
-            else if(simEnds[j] <= simLeft){
+            if(simEnds[j] <= simLeft){
                 countLeft++;
             }
         }
 
-        double dy = (countRight/simEnds.size()) - (countLeft/simEnds.size());
+        double dy = (double(countRight)/simEnds.size()) - (double(countLeft)/simEnds.size());
         double dx = simRight - simLeft;
 
         double pdf = dy/dx;
@@ -662,6 +661,9 @@ double findLikelihood(stochasticModel model, std::vector<double> observations, i
 
         std::cout << "\nCount Left: " << countLeft;
         std::cout << "\nCount Right: " << countRight;
+
+        std::cout << "\ndy: " << dy;
+        std::cout << "\ndx: " << dx;
    }
 
    return chance;

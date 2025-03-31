@@ -591,9 +591,7 @@ void rewriteTest(){
 
     std::cout << "\nParam: " << model.parameters[1][0];
 
-    double likelihood = findLikelihood(model, output, {100,1000});
 
-    std::cout << "\n Likelihood: " << likelihood;
 }
 
 void testLikelihood(){
@@ -670,21 +668,7 @@ void testLikelihood(){
     stochasticModel newModel = trueModel;
     newModel.parameters = newParams;
 
-    double chance1 = findLikelihood(trueModel, output, {100,5000});
 
-    double chance2 = findLikelihood(falseModel, output, {100,5000});
-
-    double chance3 = findLikelihood(newModel, output, {100,5000});
-
-    std::cout << "\nTrue Params: " << trueModel.parameters[0][0] << " and " << trueModel.parameters[1][0];
-
-    std::cout << "\nFalse Params: " << falseModel.parameters[0][0] << " " << falseModel.parameters[0][1] << " and " << falseModel.parameters[1][0];
-
-    std::cout << "\nTrue model likelihood: " << chance1;
-
-    std::cout << "\nFalse model likelihood: " << chance2;
-
-    std::cout << "\nNew model likelihood: " << chance3;
 }
 
 void testPdf(){
@@ -705,13 +689,17 @@ void testPdf(){
     double dt = 0.05;
     double divisions = 2;
 
-    std::vector<double> params = {{1},{0.02}};
+    std::vector<std::vector<double>> params = {{1},{0.02}};
 
-    std::vector<double> observations = {0,2.7};
+    std::vector<double> observations = {0,1};
 
-    stochasticModel model = stochasticModel()    
+    linearlySpacedVector(times, start, end, dt);
 
-    findLikelihood(model, observations, )
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, params);
+
+    double chance = findLikelihood(model, observations, 10000, 10, 0.005);
+
+    std::cout << "\nChance: " << chance;
 }
 
 int main(){
@@ -736,5 +724,7 @@ int main(){
 
     //rewriteTest();
 
-    testLikelihood();
+    //testLikelihood();
+
+    testPdf();
 }
