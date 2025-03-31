@@ -607,25 +607,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
     return model.parameters[parameterSet];
 }
 
-double findLikelihood(stochasticModel model, std::vector<double> observations, std::vector<double> params){  
-   auto binarySearch = [](std::vector<double>& array, int value){
-        int low = 0;
-        int high = array.size() - 1;
-        int rank = 0;
-
-        while(low <= high){
-            int mid = low + (high - low)/2;
-
-            if(array[mid] < value){
-                rank = mid + 1;
-                low = mid + 1;
-            }else{
-                high = mid - 1;
-            }
-        }
-
-        return rank;
-   };
+double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double dt){  
 
    stochasticModel noVarModel = model;
    noVarModel.betaFunction = zeroFunction;
@@ -646,7 +628,7 @@ double findLikelihood(stochasticModel model, std::vector<double> observations, s
 
    double chance = 0;
 
-   multipleEulerMaruyamaWithin(simData, simModel, params[0], params[1]);
+   multipleEulerMaruyamaWithin(simData, simModel, divisions, numSims);
 
    for(int i = 1; i < observations.size(); i++){
         simEnds = {};
@@ -654,17 +636,32 @@ double findLikelihood(stochasticModel model, std::vector<double> observations, s
         for(int j = 0; j < simData.size(); j++){
             simEnds.push_back(simData[i][j]);
         }
+        
+        double simLeft = observations[i] - dt;
+        double simRight = observations[i] + dt;
+        
+        int countLeft = 0;
+        int countRight = 0;
 
-        double var = sampleVariance(simEnds);
-        double mean = sampleMean(simEnds);
+        for(int j = 0; j < simEnds.size(); j++){
+            if(simEnds[j] <= simRight){
+                countLeft++;
+                countRight++;
+            }
+            else if(simEnds[j] <= simLeft){
+                countLeft++;
+            }
+        }
 
-        //std::cout << "\nVar: " << var << "\nMean: " << mean;
+        double dy = (countRight/simEnds.size()) - (countLeft/simEnds.size());
+        double dx = simRight - simLeft;
 
-        double pdf = normalPDF(observations[i], mean, var);
-
-        //std::cout << "\nPDF: " << pdf;
+        double pdf = dy/dx;
 
         chance += log(pdf);
+
+        std::cout << "\nCount Left: " << countLeft;
+        std::cout << "\nCount Right: " << countRight;
    }
 
    return chance;

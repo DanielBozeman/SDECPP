@@ -687,6 +687,33 @@ void testLikelihood(){
     std::cout << "\nNew model likelihood: " << chance3;
 }
 
+void testPdf(){
+    auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    auto betaFunction = [](double& value, double& time, std::vector<double>& parameters){
+        return (parameters[0] * value);
+    };
+
+    double initialValue = 1;
+
+    std::vector<double> times;
+
+    double start = 0;
+    double end = 1;
+    double dt = 0.05;
+    double divisions = 2;
+
+    std::vector<double> params = {{1},{0.02}};
+
+    std::vector<double> observations = {0,2.7};
+
+    stochasticModel model = stochasticModel()    
+
+    findLikelihood(model, observations, )
+}
+
 int main(){
     //SAComparison();
     //varianceViewer();
