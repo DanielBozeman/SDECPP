@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters){
     return 0;
@@ -340,4 +341,4 @@ double testFit(stochasticModel model, std::vector<double> data, int numInterRuns
 
     //std::cout << "\nChi var is " << chiVar;
     return chiStatistic;
-}   
+}  

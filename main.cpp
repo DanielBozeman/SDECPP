@@ -702,6 +702,23 @@ void testPdf(){
     std::cout << "\nChance: " << chance;
 }
 
+void pdfEstimation(){
+    std::vector<double> standardNormalVariables = {};
+
+    for(int i = 0; i < 1000000; i++){
+        standardNormalVariables.push_back(randomPathMaker::dW(1));
+    }
+
+    double input = 0.5;
+
+    double estimate = estimatePdf(standardNormalVariables, input, 100);
+
+    double truePdf = normalPDF(input, 0, 1);
+    
+    std::cout << "\nEstimate: " << estimate;
+    std::cout << "\nPDF: " << truePdf;
+}
+
 int main(){
     //SAComparison();
     //varianceViewer();
@@ -726,5 +743,6 @@ int main(){
 
     //testLikelihood();
 
-    testPdf();
+    //testPdf();
+    pdfEstimation();
 }

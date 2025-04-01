@@ -607,6 +607,59 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
     return model.parameters[parameterSet];
 }
 
+double findDt(std::vector<double>& observations, int divisions){
+    double max = -std::numeric_limits<double>::infinity();
+    double min = std::numeric_limits<double>::infinity();
+
+    for(int i = 0; i < observations.size(); i++){
+        if(observations[i] < min){
+            min = observations[i];
+        }
+        if(observations[i] > max){
+            max = observations[i];
+        }
+    }
+
+    std::cout << "\nMax: " << max;
+    std::cout << "\nMin: " << min;
+    double dt = (max - min)/double(divisions);
+
+    return dt;
+}
+
+double estimatePdf(std::vector<double>& observations, double input, int divisions){
+    double dt = findDt(observations, divisions);
+
+    double simLeft = input - dt;
+    double simRight = input + dt;
+    
+    int countLeft = 0;
+    int countRight = 0;
+
+    
+    for(int j = 0; j < observations.size(); j++){
+        if(observations[j] <= simRight){
+            countRight++;
+        }
+        if(observations[j] <= simLeft){
+            countLeft++;
+        }
+    }
+
+    double dy = (double(countRight)/observations.size()) - (double(countLeft)/observations.size());
+    double dx = simRight - simLeft;
+
+    double pdf = dy/dx;
+
+    std::cout << "\nCount Left: " << countLeft;
+    std::cout << "\nCount Right: " << countRight;
+
+    std::cout << "\ndy: " << dy;
+    std::cout << "\ndx: " << dx;
+
+   return pdf;
+}
+
 double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double dt){  
 
    stochasticModel noVarModel = model;
