@@ -24,6 +24,14 @@ void stochasticModel::setParameters(std::vector<std::vector<double>> constants){
     parameters = constants;
 }
 
+void stochasticModel::randomizeParameter(int paramSet){
+    int choice = randomGenerator.next() % parameters[paramSet].size();
+
+    int limitSize = abs(parameterLimits[paramSet][choice][1] - parameterLimits[paramSet][choice][0]);
+
+    parameters[paramSet][choice] = (randomGenerator.next() % limitSize) + randomGenerator.d01() + std::min({parameterLimits[paramSet][choice][1], parameterLimits[paramSet][choice][0]});
+}
+
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   
     std::size_t N = (b-a)/h + 1;
     xs.resize(N);

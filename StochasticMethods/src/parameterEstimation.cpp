@@ -571,7 +571,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
             //std::cout << "\nCur param" << newModel.parameters[0][0];
 
             if((cost == 0 || abs(cost) == std::numeric_limits<double>::infinity()) && (oldCost == 0 || abs(oldCost) == std::numeric_limits<double>::infinity())){
-                newModel.parameters[parameterSet] = randomParam(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet]);
+                newModel.randomizeParameter(parameterSet);
                 //std::cout << "\nIndeterminate cost!";
                 continue;
             }else{
