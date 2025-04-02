@@ -680,6 +680,14 @@ void testPdf(){
         return (parameters[0] * value);
     };
 
+    auto fakeAlpha = [](double& value, double& time, std::vector<double>& parameters){
+        return(parameters[0] * value + parameters[1]);
+    };
+
+    std::vector<std::vector<double>> falseParameters = {{0,0},{0.001}};
+    std::vector<std::vector<std::vector<double>>> falseParameterLimits = {{{0,2},{-100,100}},{{0,1}}};
+    std::vector<std::vector<double>> falseParameterSteps = {{1,1},{1}};
+
     double initialValue = 1;
 
     std::vector<double> times;
@@ -690,16 +698,56 @@ void testPdf(){
     double divisions = 2;
 
     std::vector<std::vector<double>> params = {{1},{0.02}};
-
-    std::vector<double> observations = {0,1};
+    std::vector<std::vector<std::vector<double>>> parameterLimits = {{{0,2}},{{0,1}}};
+    std::vector<std::vector<double>> parameterSteps = {{1},{1}};
 
     linearlySpacedVector(times, start, end, dt);
 
-    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, params);
+    //std::cout << std::endl << times.size();
 
-    double chance = findLikelihood(model, observations, 10000, 10, 0.005);
+    stochasticModel model = stochasticModel(alphaFunction, betaFunction, initialValue, times, params, parameterLimits, parameterSteps);
+
+    stochasticModel falseModel = stochasticModel(fakeAlpha, betaFunction, initialValue, times, falseParameters, falseParameterLimits, falseParameterSteps);
+
+    std::vector<double> observations;
+
+    eulerMaruyamaWithin(observations, model, 100);
+
+    model.parameters = {{1},{0.02}};
+
+    double chance = findLikelihood(model, observations, 100000, 10, 0.075);
 
     std::cout << "\nChance: " << chance;
+
+    std::cout << "\n===============================";
+
+    model.parameters = {{0.5},{0.2}};
+
+    chance = findLikelihood(model, observations, 100000, 10, 0.075);
+    
+    std::cout << "\nFalse Params Chance: " << chance;
+
+    model.parameters[0] = paramEstimation(model, 0, observations, 1, 200, 0.99, 250, 15, driftCost);
+
+    std::cout << "\n===============================";
+
+    model.parameters[1] = paramEstimation(model, 1, observations, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+
+    std::cout << "\nFit params: " << model.parameters[0][0] << " and " << model.parameters[1][0];
+
+    chance = findLikelihood(model, observations, 100000, 10, 0.075);
+
+    std::cout << "\nFit Params Chance: " << chance;
+
+    falseModel.parameters[0] = paramEstimation(falseModel, 0, observations, 1, 200, 0.99, 250, 15, driftCost);
+
+    falseModel.parameters[1] = paramEstimation(falseModel, 1, observations, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+
+    std::cout << "\n===============================";
+
+    chance = findLikelihood(falseModel, observations, 100000, 10, 0.075);
+
+    std::cout << "\nFalse Model Chance: " << chance;
 }
 
 void pdfEstimation(){
@@ -711,8 +759,8 @@ void pdfEstimation(){
 
     double input = 0.5;
 
-    double estimate = estimatePdf(standardNormalVariables, input, 100);
-
+    double estimate = estimatePdf(standardNormalVariables, input, 0.075);
+    //double estimate = 1;
     double truePdf = normalPDF(input, 0, 1);
     
     std::cout << "\nEstimate: " << estimate;
@@ -743,6 +791,6 @@ int main(){
 
     //testLikelihood();
 
-    //testPdf();
-    pdfEstimation();
+    testPdf();
+    //pdfEstimation();
 }

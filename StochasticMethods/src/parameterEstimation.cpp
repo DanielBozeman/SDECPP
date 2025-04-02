@@ -586,7 +586,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
 
             if(cost < bestCost){
                 notMovedIn = 0;
-                std::cout << "\nBest cost: " << cost;
+                //std::cout << "\nBest cost: " << cost;
                 bestModel = currentModel;
                 bestCost = cost;
             }
@@ -599,12 +599,34 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
         }
 
         temperature *= coolingRate;
-        std::cout << "\nTemperature: " << temperature;
+        //std::cout << "\nTemperature: " << temperature;
     }
 
     model = bestModel;
     
     return model.parameters[parameterSet];
+}
+
+double dtByPercentage(std::vector<double>& observations, double percentage, double input){
+    double max = -std::numeric_limits<double>::infinity();
+    double min = std::numeric_limits<double>::infinity();
+
+    std::sort(observations.begin(), observations.end());
+
+    double dt = (observations.back() - observations[0])/observations.size();
+
+    int numInRange = std::floor(observations.size() * percentage);
+    
+    std::vector<double>::iterator low = std::lower_bound(observations.begin(), observations.end(), input);
+    
+    int index = std::distance(observations.begin(), low);
+
+    double upperDistance = observations[index + std::floor(percentage*0.5*observations.size())] - observations[index];
+    double lowerDistance = observations[index] - observations[index - std::floor(percentage*0.5*observations.size())];
+
+    //std::cout << "\nUpper: " << upperDistance << "   Lower: " << lowerDistance;
+
+    return std::max(upperDistance*2,lowerDistance*2);
 }
 
 double findDt(std::vector<double>& observations, int divisions){
@@ -620,16 +642,19 @@ double findDt(std::vector<double>& observations, int divisions){
         }
     }
 
-    std::cout << "\nMax: " << max;
-    std::cout << "\nMin: " << min;
+    //std::cout << "\nMax: " << max;
+    //std::cout << "\nMin: " << min;
     double dt = (max - min)/double(divisions);
 
     return dt;
 }
 
-double estimatePdf(std::vector<double>& observations, double input, int divisions){
-    double dt = findDt(observations, divisions);
+double estimatePdf(std::vector<double>& observations, double input, double percentage){
+    //double dt = findDt(observations, divisions);
 
+    double dt = dtByPercentage(observations, percentage, input);
+
+    //dt = 0.05;
     double simLeft = input - dt;
     double simRight = input + dt;
     
@@ -651,16 +676,16 @@ double estimatePdf(std::vector<double>& observations, double input, int division
 
     double pdf = dy/dx;
 
-    std::cout << "\nCount Left: " << countLeft;
-    std::cout << "\nCount Right: " << countRight;
+    //std::cout << "\nCount Left: " << countLeft;
+    //std::cout << "\nCount Right: " << countRight;
 
-    std::cout << "\ndy: " << dy;
-    std::cout << "\ndx: " << dx;
+    //std::cout << "\ndy: " << dy;
+    //std::cout << "\ndx: " << dx;
 
-   return pdf;
+    return pdf;
 }
 
-double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double dt){  
+double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage){  
 
    stochasticModel noVarModel = model;
    noVarModel.betaFunction = zeroFunction;
@@ -687,36 +712,13 @@ double findLikelihood(stochasticModel model, std::vector<double> observations, i
         simEnds = {};
 
         for(int j = 0; j < simData.size(); j++){
-            simEnds.push_back(simData[i][j]);
+            double data = simData[j][i];
+            simEnds.push_back(simData[j][i]);
         }
         
-        double simLeft = observations[i] - dt;
-        double simRight = observations[i] + dt;
-        
-        int countLeft = 0;
-        int countRight = 0;
-
-        for(int j = 0; j < simEnds.size(); j++){
-            if(simEnds[j] <= simRight){
-                countRight++;
-            }
-            if(simEnds[j] <= simLeft){
-                countLeft++;
-            }
-        }
-
-        double dy = (double(countRight)/simEnds.size()) - (double(countLeft)/simEnds.size());
-        double dx = simRight - simLeft;
-
-        double pdf = dy/dx;
+        double pdf = estimatePdf(simEnds, observations[i], percentage);
 
         chance += log(pdf);
-
-        std::cout << "\nCount Left: " << countLeft;
-        std::cout << "\nCount Right: " << countRight;
-
-        std::cout << "\ndy: " << dy;
-        std::cout << "\ndx: " << dx;
    }
 
    return chance;
