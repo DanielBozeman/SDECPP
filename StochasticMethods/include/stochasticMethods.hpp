@@ -27,20 +27,18 @@ class stochasticModel{
     
     void setParameters(std::vector<std::vector<double>> constants);  
     virtual void randomizeParameter(int paramSet);
-    void parameterNeighbor();
+    virtual void parameterNeighbor(int paramSet);
 };
 
 class polynomialModel : public stochasticModel{
     private:
     
     public:
-    std::vector<double> polynomialDegrees;
-    std::vector<double> polynomialCoefficients;
-
-
 };
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters);
+
+double polynomialFunction(double& value, double& time, std::vector<double>& parameters);
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h);
 

@@ -595,7 +595,9 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
                 return bestModel.parameters[parameterSet];
             }
 
-            newModel.parameters[parameterSet] = parameterNeighbor(currentModel.parameters[parameterSet], currentModel.parameterLimits[parameterSet], currentModel.parameterSteps[parameterSet]);
+            newModel.parameterNeighbor(parameterSet);
+            //currentModel.parameterNeighbor(parameterSet);
+            //newModel.parameters[parameterSet] = currentModel.parameters[parameterSet];
         }
 
         temperature *= coolingRate;
@@ -608,8 +610,8 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
 }
 
 double dtByPercentage(std::vector<double>& observations, double percentage, double input){
-    double max = -std::numeric_limits<double>::infinity();
-    double min = std::numeric_limits<double>::infinity();
+    double top = -std::numeric_limits<double>::infinity();
+    double bottom = std::numeric_limits<double>::infinity();
 
     std::sort(observations.begin(), observations.end());
 
@@ -621,8 +623,18 @@ double dtByPercentage(std::vector<double>& observations, double percentage, doub
     
     int index = std::distance(observations.begin(), low);
 
-    double upperDistance = observations[index + std::floor(percentage*0.5*observations.size())] - observations[index];
-    double lowerDistance = observations[index] - observations[index - std::floor(percentage*0.5*observations.size())];
+    int upperIndex = index + std::floor(percentage*0.5*observations.size());
+    if(upperIndex > observations.size() - 1){
+        upperIndex = observations.size() - 1;
+    }
+
+    int lowerIndex = index - std::floor(percentage*0.5*observations.size());
+    if(lowerIndex < 0){
+        lowerIndex = 0;
+    }
+
+    double upperDistance = observations[upperIndex] - observations[index];
+    double lowerDistance = observations[index] - observations[lowerIndex];
 
     //std::cout << "\nUpper: " << upperDistance << "   Lower: " << lowerDistance;
 
@@ -685,7 +697,7 @@ double estimatePdf(std::vector<double>& observations, double input, double perce
     return pdf;
 }
 
-double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage){  
+long double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage){  
 
    stochasticModel noVarModel = model;
    noVarModel.betaFunction = zeroFunction;
@@ -704,7 +716,7 @@ double findLikelihood(stochasticModel model, std::vector<double> observations, i
 
    stochasticModel simModel = model;
 
-   double chance = 0;
+   long double chance = 0;
 
    multipleEulerMaruyamaWithin(simData, simModel, divisions, numSims);
 

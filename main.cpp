@@ -693,7 +693,7 @@ void testPdf(){
     std::vector<double> times;
 
     double start = 0;
-    double end = 1;
+    double end = 10;
     double dt = 0.05;
     double divisions = 2;
 
@@ -765,6 +765,10 @@ void pdfEstimation(){
     
     std::cout << "\nEstimate: " << estimate;
     std::cout << "\nPDF: " << truePdf;
+}
+
+void testFits(){
+    
 }
 
 int main(){

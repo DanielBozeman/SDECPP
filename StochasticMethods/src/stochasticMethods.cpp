@@ -10,6 +10,14 @@ double zeroFunction(double& value, double& time, std::vector<double>& parameters
     return 0;
 }
 
+double polynomialFunction(double& value, double& time, std::vector<double>& parameters){
+    double total = 0;
+    for(int i = 0; i < parameters.size(); i++){
+        total += (parameters[i] + std::pow(value, i));
+    }
+    return total;
+}
+
 stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     alphaFunction = function1;
     betaFunction = function2;
@@ -22,6 +30,16 @@ stochasticModel::stochasticModel(stochastic_function function1, stochastic_funct
 
 void stochasticModel::setParameters(std::vector<std::vector<double>> constants){
     parameters = constants;
+}
+
+void stochasticModel::parameterNeighbor(int paramSet){
+    int choice = randomGenerator.next() % parameters[paramSet].size();
+
+    parameters[paramSet][choice] += randomPathMaker::dW(parameterSteps[paramSet][choice]);
+
+    parameters[paramSet][choice] = parameters[paramSet][choice] < parameterLimits[paramSet][choice][0] ? parameterLimits[paramSet][choice][0] : parameters[paramSet][choice];
+    parameters[paramSet][choice] = parameters[paramSet][choice] > parameterLimits[paramSet][choice][1] ? parameterLimits[paramSet][choice][1] : parameters[paramSet][choice];
+
 }
 
 void stochasticModel::randomizeParameter(int paramSet){

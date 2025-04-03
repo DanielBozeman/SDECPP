@@ -37,6 +37,6 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
  */
 double estimatePdf(std::vector<double>& observations, double input, double percentage);
 
-double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage);
+long double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage);
 
 #endif // __PARAMETERESTIMATION_H__
