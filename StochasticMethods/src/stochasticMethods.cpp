@@ -13,7 +13,7 @@ double zeroFunction(double& value, double& time, std::vector<double>& parameters
 double polynomialFunction(double& value, double& time, std::vector<double>& parameters){
     double total = 0;
     for(int i = 0; i < parameters.size(); i++){
-        total += (parameters[i] + std::pow(value, i));
+        total += (parameters[i] * std::pow(value, (parameters.size() - i - 1)));
     }
     return total;
 }
@@ -39,7 +39,6 @@ void stochasticModel::parameterNeighbor(int paramSet){
 
     parameters[paramSet][choice] = parameters[paramSet][choice] < parameterLimits[paramSet][choice][0] ? parameterLimits[paramSet][choice][0] : parameters[paramSet][choice];
     parameters[paramSet][choice] = parameters[paramSet][choice] > parameterLimits[paramSet][choice][1] ? parameterLimits[paramSet][choice][1] : parameters[paramSet][choice];
-
 }
 
 void stochasticModel::randomizeParameter(int paramSet){
@@ -48,6 +47,63 @@ void stochasticModel::randomizeParameter(int paramSet){
     int limitSize = abs(parameterLimits[paramSet][choice][1] - parameterLimits[paramSet][choice][0]);
 
     parameters[paramSet][choice] = (randomGenerator.next() % limitSize) + randomGenerator.d01() + std::min({parameterLimits[paramSet][choice][1], parameterLimits[paramSet][choice][0]});
+}
+
+polynomialModel::polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<int>> usedTerms, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes):stochasticModel(polynomialFunction, polynomialFunction, startValue, times, constants, constantLimits, stepSizes){
+    activeTerms = usedTerms;
+    //stochasticModel(polynomialFunction, polynomialFunction, startValue, times, constants, constantLimits, stepSizes); 
+}
+
+void polynomialModel::parameterNeighbor(int paramSet){
+    int choice = randomGenerator.next() % activeTerms[paramSet].size();
+
+    parameters[paramSet][activeTerms[paramSet][choice]] += randomPathMaker::dW(parameterSteps[paramSet][choice]);
+
+    parameters[paramSet][activeTerms[paramSet][choice]] = parameters[paramSet][activeTerms[paramSet][choice]] < parameterLimits[paramSet][activeTerms[paramSet][choice]][0] ? parameterLimits[paramSet][activeTerms[paramSet][choice]][0] : parameters[paramSet][activeTerms[paramSet][choice]];
+    parameters[paramSet][activeTerms[paramSet][choice]] = parameters[paramSet][activeTerms[paramSet][choice]] > parameterLimits[paramSet][activeTerms[paramSet][choice]][1] ? parameterLimits[paramSet][activeTerms[paramSet][choice]][1] : parameters[paramSet][activeTerms[paramSet][choice]];
+}
+
+void polynomialModel::randomizeParameter(int paramSet){
+    int choice = randomGenerator.next() % activeTerms[paramSet].size();
+
+    int limitSize = abs(parameterLimits[paramSet][activeTerms[paramSet][choice]][1] - parameterLimits[paramSet][activeTerms[paramSet][choice]][0]);
+
+    parameters[paramSet][activeTerms[paramSet][choice]] = (randomGenerator.next() % limitSize) + randomGenerator.d01() + std::min({parameterLimits[paramSet][activeTerms[paramSet][choice]][1], parameterLimits[paramSet][activeTerms[paramSet][choice]][0]});
+}
+
+void polynomialModel::addTerm(int paramSet, int term){
+    if(std::find(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), term) != activeTerms[paramSet].end()){
+        return;
+    }else{
+        activeTerms[paramSet].push_back(term);
+    }
+
+    for(int i = parameters[paramSet].size(); i < term; i++){
+        parameters[paramSet].push_back(0);
+        parameterLimits[paramSet].push_back({-100,100});
+        parameterSteps[paramSet].push_back(1);
+    }
+}
+
+void polynomialModel::removeTerm(int paramSet, int term){
+    if(std::find(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), term) == activeTerms[paramSet].end()){
+        return;
+    }else{
+        std::remove(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), term);
+        parameterLimits[paramSet].erase(parameterLimits[paramSet].begin() + term);
+        parameterSteps[paramSet].erase(parameterSteps[paramSet].begin() + term);
+    }
+}
+
+void polynomialModel::removeLastTerm(int paramSet){
+    int term = activeTerms[paramSet].back();
+    removeTerm(paramSet, term);
+}
+
+void polynomialModel::addNextTerm(int paramSet){
+    int term = *std::max_element(activeTerms[paramSet].begin(), activeTerms[paramSet].end());
+
+    addTerm(paramSet, term+1);
 }
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   

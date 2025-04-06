@@ -768,7 +768,48 @@ void pdfEstimation(){
 }
 
 void testFits(){
+   double input = -9.8;
+
+   long double mantissa = 0;
+   int exp = 0;
+
+   mantissa = frexp(-9.8, &exp);
+
+   long unsigned int exponent = 0;
+
+   exponent = exp;
+
+   std::cout << "\nMantissa: " << mantissa << "   Exp: " << exponent;
+
+
+}
+
+void testPolynomial(){
     
+    std::vector<std::vector<int>> activeTerms = {{1},{1}};
+
+    std::vector<std::vector<double>> parameters = {{1,0},{0.2,0}};
+
+    double initialValue = 1;
+
+    double start = 0;
+    double end = 1;
+    double dt = 0.05;
+
+    std::vector<double> times;
+
+    linearlySpacedVector(times, start, end, dt);
+    
+    polynomialModel polyModel = polynomialModel(initialValue, times, parameters, activeTerms);
+
+    std::vector<double> output;
+
+    eulerMaruyamaWithin(output, polyModel, 1);
+
+    for(int i = 0; i < output.size(); i++){
+        std::cout << "\n" << output[i];
+    }
+
 }
 
 int main(){
@@ -795,6 +836,10 @@ int main(){
 
     //testLikelihood();
 
-    testPdf();
+    //testPdf();
     //pdfEstimation();
+
+    //testFits();
+
+    testPolynomial();
 }

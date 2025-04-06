@@ -23,7 +23,7 @@ class stochasticModel{
     std::vector<std::vector<double>> parameterSteps;
 
     stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
-    
+
     
     void setParameters(std::vector<std::vector<double>> constants);  
     virtual void randomizeParameter(int paramSet);
@@ -31,9 +31,21 @@ class stochasticModel{
 };
 
 class polynomialModel : public stochasticModel{
-    private:
     
+    private:
+
     public:
+
+    std::vector<std::vector<int>> activeTerms;
+
+    polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<int>> usedTerms, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
+
+    void addNextTerm(int paramSet);
+    void addTerm(int paramSet, int term);
+    void removeLastTerm(int paramSet);
+    void removeTerm(int paramSet, int term);
+    void randomizeParameter(int paramSet);
+    void parameterNeighbor(int paramSet);
 };
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters);

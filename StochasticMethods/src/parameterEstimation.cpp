@@ -718,6 +718,11 @@ long double findLikelihood(stochasticModel model, std::vector<double> observatio
 
    long double chance = 0;
 
+   long int exponent = 0;
+   long double mantissa = 0;
+
+   int tempExp = 0;
+
    multipleEulerMaruyamaWithin(simData, simModel, divisions, numSims);
 
    for(int i = 1; i < observations.size(); i++){
@@ -730,8 +735,18 @@ long double findLikelihood(stochasticModel model, std::vector<double> observatio
         
         double pdf = estimatePdf(simEnds, observations[i], percentage);
 
-        chance += log(pdf);
+        double tempMantissa = std::frexp(pdf, &tempExp);
+
+        mantissa += log2(tempMantissa);
+        exponent += tempExp;
+
+        exponent += floor(mantissa);
+        mantissa -= floor(mantissa);
+
+        chance += log2(pdf);
    }
+
+   std::cout << "\nMantissa: " << mantissa << "   Exp:" << exponent;
 
    return chance;
 }
