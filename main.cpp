@@ -788,7 +788,10 @@ void testPolynomial(){
     
     std::vector<std::vector<int>> activeTerms = {{1},{1}};
 
-    std::vector<std::vector<double>> parameters = {{1,0},{0.2,0}};
+    std::vector<std::vector<double>> parameters = {{0,1},{0,0.02}};
+    std::vector<std::vector<std::vector<double>>> paramLimits = {{{-100,100}},{{-100,100}}};
+    std::vector<std::vector<double>> paramSteps = {{1},{1}};
+
 
     double initialValue = 1;
 
@@ -800,15 +803,24 @@ void testPolynomial(){
 
     linearlySpacedVector(times, start, end, dt);
     
-    polynomialModel polyModel = polynomialModel(initialValue, times, parameters, activeTerms);
+    polynomialModel polyModel = polynomialModel(initialValue, times, parameters, activeTerms, paramLimits, paramSteps);
+
+    polyModel.addNextTerm(0);
+    polyModel.addNextTerm(0);
+    polyModel.addNextTerm(0);
+
+    polyModel.removeTerm(0, 2);
 
     std::vector<double> output;
 
-    eulerMaruyamaWithin(output, polyModel, 1);
+    eulerMaruyamaWithin(output, polyModel, 100);
 
     for(int i = 0; i < output.size(); i++){
-        std::cout << "\n" << output[i];
+        //std::cout << "\n" << output[i];
     }
+
+    std::cout << "\nFinished";
+
 
 }
 
@@ -842,4 +854,6 @@ int main(){
     //testFits();
 
     testPolynomial();
+
+    std::cout << "\nDone";
 }

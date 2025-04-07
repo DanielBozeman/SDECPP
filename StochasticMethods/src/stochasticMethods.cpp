@@ -13,7 +13,10 @@ double zeroFunction(double& value, double& time, std::vector<double>& parameters
 double polynomialFunction(double& value, double& time, std::vector<double>& parameters){
     double total = 0;
     for(int i = 0; i < parameters.size(); i++){
-        total += (parameters[i] * std::pow(value, (parameters.size() - i - 1)));
+        //std::cout << "\ni: " << i;
+        //std::cout << "\nPower: " << i;
+        //std::cout << "\nParameter: " << parameters[i] << std::endl;
+        total += (parameters[i] * std::pow(value, i));
     }
     return total;
 }
@@ -78,7 +81,7 @@ void polynomialModel::addTerm(int paramSet, int term){
         activeTerms[paramSet].push_back(term);
     }
 
-    for(int i = parameters[paramSet].size(); i < term; i++){
+    for(int i = parameters[paramSet].size()-1; i < term; i++){
         parameters[paramSet].push_back(0);
         parameterLimits[paramSet].push_back({-100,100});
         parameterSteps[paramSet].push_back(1);
@@ -86,12 +89,13 @@ void polynomialModel::addTerm(int paramSet, int term){
 }
 
 void polynomialModel::removeTerm(int paramSet, int term){
-    if(std::find(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), term) == activeTerms[paramSet].end()){
+    auto place = std::find(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), term);
+    if(place == activeTerms[paramSet].end()){
         return;
+        std::cout << "\nTerm not found!";
     }else{
-        std::remove(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), term);
-        parameterLimits[paramSet].erase(parameterLimits[paramSet].begin() + term);
-        parameterSteps[paramSet].erase(parameterSteps[paramSet].begin() + term);
+        activeTerms[paramSet].erase(place);
+        parameters[paramSet][term] = 0;
     }
 }
 
