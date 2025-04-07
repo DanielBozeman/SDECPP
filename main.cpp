@@ -805,12 +805,6 @@ void testPolynomial(){
     
     polynomialModel polyModel = polynomialModel(initialValue, times, parameters, activeTerms, paramLimits, paramSteps);
 
-    polyModel.addNextTerm(0);
-    polyModel.addNextTerm(0);
-    polyModel.addNextTerm(0);
-
-    polyModel.removeTerm(0, 2);
-
     std::vector<double> output;
 
     eulerMaruyamaWithin(output, polyModel, 100);
@@ -818,6 +812,13 @@ void testPolynomial(){
     for(int i = 0; i < output.size(); i++){
         //std::cout << "\n" << output[i];
     }
+
+    polyModel.parameters[0] = paramEstimation(polyModel, 0, output, 1, 200, 0.99, 250, 1, driftCost);
+    polyModel.parameters[1] = paramEstimation(polyModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+    
+    double value = 2;
+    double inputTime = 0;
+    std::cout << "\nFunction output: " << polyModel.alphaFunction(value, inputTime, polyModel.parameters[0]);
 
     std::cout << "\nFinished";
 

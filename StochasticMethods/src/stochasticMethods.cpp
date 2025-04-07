@@ -110,6 +110,30 @@ void polynomialModel::addNextTerm(int paramSet){
     addTerm(paramSet, term+1);
 }
 
+void polynomialModel::addMultipleTerms(int paramSet, std::vector<int> terms){
+    for(int i = 0; i < terms.size(); i++){
+        addTerm(paramSet, terms[i]);
+    }
+}
+
+void polynomialModel::addMultipleTerms(int paramSet, int maxTerm){
+    for(int i = 0; i <= maxTerm; i++){
+        addTerm(paramSet, i);
+    }
+}
+
+void polynomialModel::setTermParameter(int paramSet, int term, double coefficient){
+    parameters[paramSet][term] = coefficient;
+}
+
+stochasticModel stochasticModel::newInstance(stochasticModel model){
+    return stochasticModel(model);
+}
+
+polynomialModel polynomialModel::newInstance(polynomialModel model){
+    return polynomialModel(model);
+}
+
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   
     std::size_t N = (b-a)/h + 1;
     xs.resize(N);
