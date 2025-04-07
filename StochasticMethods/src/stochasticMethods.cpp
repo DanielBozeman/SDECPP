@@ -126,14 +126,6 @@ void polynomialModel::setTermParameter(int paramSet, int term, double coefficien
     parameters[paramSet][term] = coefficient;
 }
 
-stochasticModel stochasticModel::newInstance(stochasticModel model){
-    return stochasticModel(model);
-}
-
-polynomialModel polynomialModel::newInstance(polynomialModel model){
-    return polynomialModel(model);
-}
-
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   
     std::size_t N = (b-a)/h + 1;
     xs.resize(N);

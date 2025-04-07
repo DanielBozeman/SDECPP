@@ -813,9 +813,9 @@ void testPolynomial(){
         //std::cout << "\n" << output[i];
     }
 
-    polyModel.parameters[0] = paramEstimation(polyModel, 0, output, 1, 200, 0.99, 250, 1, driftCost);
-    polyModel.parameters[1] = paramEstimation(polyModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
-    
+    polyModel.parameters[0] = polynomialParamEstimation(polyModel, 0, output, 1, 200, 0.99, 250, 1, driftCost);
+    polyModel.parameters[1] = polynomialParamEstimation(polyModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+
     double value = 2;
     double inputTime = 0;
     std::cout << "\nFunction output: " << polyModel.alphaFunction(value, inputTime, polyModel.parameters[0]);

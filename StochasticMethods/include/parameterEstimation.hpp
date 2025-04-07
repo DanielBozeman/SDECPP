@@ -9,7 +9,6 @@ typedef long double (*costFunction)(std::vector<std::vector<double>>&, std::vect
 typedef long double (*modelCostFunction)(stochasticModel model, std::vector<double>&, int, std::vector<double>);
 
 
-
 long double multiVectorRMSE(std::vector<std::vector<double>>& simulations, std::vector<double>& actual);
 long double multiVectorMSE(std::vector<std::vector<double>>& simulations, std::vector<double>& actual);
 
@@ -26,6 +25,10 @@ std::vector<double> simulatedAnnealingDriftEstimation(stochasticModel model, int
 long double driftCost(stochasticModel model, std::vector<double> &observations, int numSims, std::vector<double> optionalParams = {});
 long double varianceCost(stochasticModel model, std::vector<double> &observations, int numSims, std::vector<double> optionalParams = {});
 std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams = {});
+
+std::vector<double> polynomialParamEstimation(polynomialModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams = {});
+
+
 
 /**
  * @brief Estimates the value of an unknown pdf 

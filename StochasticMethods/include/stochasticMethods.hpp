@@ -28,8 +28,6 @@ class stochasticModel{
     void setParameters(std::vector<std::vector<double>> constants);  
     virtual void randomizeParameter(int paramSet);
     virtual void parameterNeighbor(int paramSet);
-
-    virtual stochasticModel newInstance(stochasticModel model);
 };
 
 class polynomialModel : public stochasticModel{
@@ -55,8 +53,6 @@ class polynomialModel : public stochasticModel{
     void setTermParameter(int paramSet, int term, double coefficient);
     void randomizeParameter(int paramSet) override;
     void parameterNeighbor(int paramSet) override;
-
-    polynomialModel newInstance(polynomialModel model);
 };
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters);
