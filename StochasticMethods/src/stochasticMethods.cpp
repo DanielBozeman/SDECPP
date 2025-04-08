@@ -1,4 +1,5 @@
 #include "stochasticMethods.hpp"
+#include "parameterEstimation.hpp"
 #include <vector>
 #include "RandomUtils.hpp"
 #include <iostream>
@@ -81,11 +82,26 @@ void polynomialModel::addTerm(int paramSet, int term){
         activeTerms[paramSet].push_back(term);
     }
 
-    for(int i = parameters[paramSet].size()-1; i < term; i++){
-        parameters[paramSet].push_back(0);
-        parameterLimits[paramSet].push_back({-100,100});
-        parameterSteps[paramSet].push_back(1);
+    if(paramSet == 0){
+        for(int i = parameters[paramSet].size(); i <= term; i++){
+            parameterLimits[paramSet].push_back({-100,100});
+            parameterSteps[paramSet].push_back(1);
+            parameters[paramSet].push_back(0);
+        }
+    }else{
+        parameters[paramSet] = {};
+        parameterLimits[paramSet] = {};
+        parameterSteps[paramSet] = {};
+        for(int i = 0; i <= term; i++){
+            parameterLimits[paramSet].push_back({0,100});
+            parameterSteps[paramSet].push_back(1);
+            parameters[paramSet].push_back(0);
+        }
+        for(int i = 0; i < activeTerms[paramSet].size(); i++){
+            parameters[paramSet][activeTerms[paramSet][i]] = 0.01;
+        }
     }
+
 }
 
 void polynomialModel::removeTerm(int paramSet, int term){
@@ -102,6 +118,17 @@ void polynomialModel::removeTerm(int paramSet, int term){
 void polynomialModel::removeLastTerm(int paramSet){
     int term = activeTerms[paramSet].back();
     removeTerm(paramSet, term);
+}
+
+void polynomialModel::removeAllTerms(int paramSet){
+    for(int i = 0; i < activeTerms[paramSet].size(); i++){
+        removeTerm(paramSet, activeTerms[paramSet][i]);
+    }
+}
+
+void polynomialModel::removeAllTerms(){
+    removeAllTerms(0);
+    removeAllTerms(1);
 }
 
 void polynomialModel::addNextTerm(int paramSet){
@@ -124,6 +151,12 @@ void polynomialModel::addMultipleTerms(int paramSet, int maxTerm){
 
 void polynomialModel::setTermParameter(int paramSet, int term, double coefficient){
     parameters[paramSet][term] = coefficient;
+}
+
+double polynomialModel::calculateAIC(std::vector<double> observations, int numSims, int divisions, double percentage){
+    double likelihood = findLikelihood(*this, observations, numSims, divisions, percentage);
+
+    return (2 * (activeTerms[0].size() + activeTerms[1].size())) - 2*likelihood;
 }
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   

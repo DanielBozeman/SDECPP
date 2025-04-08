@@ -785,13 +785,6 @@ void testFits(){
 }
 
 void testPolynomial(){
-    
-    std::vector<std::vector<int>> activeTerms = {{1},{1}};
-
-    std::vector<std::vector<double>> parameters = {{0,1},{0,0.02}};
-    std::vector<std::vector<std::vector<double>>> paramLimits = {{{-100,100}},{{-100,100}}};
-    std::vector<std::vector<double>> paramSteps = {{1},{1}};
-
 
     double initialValue = 1;
 
@@ -803,7 +796,13 @@ void testPolynomial(){
 
     linearlySpacedVector(times, start, end, dt);
     
-    polynomialModel polyModel = polynomialModel(initialValue, times, parameters, activeTerms, paramLimits, paramSteps);
+    polynomialModel polyModel = polynomialModel(initialValue, times);
+
+    polyModel.addTerm(0, 1);
+    polyModel.addTerm(1, 1);
+
+    polyModel.setTermParameter(0, 1, 1);
+    polyModel.setTermParameter(1, 1, 0.02);
 
     std::vector<double> output;
 
@@ -813,13 +812,21 @@ void testPolynomial(){
         //std::cout << "\n" << output[i];
     }
 
-    polyModel.parameters[0] = polynomialParamEstimation(polyModel, 0, output, 1, 200, 0.99, 250, 1, driftCost);
-    polyModel.parameters[1] = polynomialParamEstimation(polyModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+    polyModel.setTermParameter(1, 1, 0.01);
 
-    double value = 2;
-    double inputTime = 0;
-    std::cout << "\nFunction output: " << polyModel.alphaFunction(value, inputTime, polyModel.parameters[0]);
+    for(int i = 0; i < 8; i++){
 
+        polyModel.removeAllTerms();
+        polyModel.addTerm(1, 1);
+        polyModel.addTerm(0, i);
+
+        polyModel.parameters[0] = polynomialParamEstimation(polyModel, 0, output, 1, 200, 0.99, 250, 1, driftCost);
+        polyModel.parameters[1] = polynomialParamEstimation(polyModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+
+        double AIC = polyModel.calculateAIC(output);
+
+        std::cout << "\nAIC for " << i << " is " << AIC;
+    }
     std::cout << "\nFinished";
 
 

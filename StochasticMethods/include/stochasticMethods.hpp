@@ -28,7 +28,7 @@ class stochasticModel{
     void setParameters(std::vector<std::vector<double>> constants);  
     virtual void randomizeParameter(int paramSet);
     virtual void parameterNeighbor(int paramSet);
-};
+};  
 
 class polynomialModel : public stochasticModel{
     
@@ -38,7 +38,7 @@ class polynomialModel : public stochasticModel{
 
     std::vector<std::vector<int>> activeTerms;
 
-    polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<int>> usedTerms, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
+    polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{}}, std::vector<std::vector<int>> usedTerms= {{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{}}, std::vector<std::vector<double>> stepSizes = {{},{}});  
 
     void addNextTerm(int paramSet);
     void addTerm(int paramSet, int term);
@@ -48,11 +48,15 @@ class polynomialModel : public stochasticModel{
 
     void removeLastTerm(int paramSet);
     void removeTerm(int paramSet, int term);
+    void removeAllTerms(int paramSet);
+    void removeAllTerms();
 
 
     void setTermParameter(int paramSet, int term, double coefficient);
     void randomizeParameter(int paramSet) override;
     void parameterNeighbor(int paramSet) override;
+
+    double calculateAIC(std::vector<double> observations, int numSims = 100000, int divisions = 100, double percentage = 0.075);
 };
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters);

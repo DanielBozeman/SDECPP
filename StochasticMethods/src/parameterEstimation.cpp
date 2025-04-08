@@ -802,18 +802,18 @@ long double findLikelihood(stochasticModel model, std::vector<double> observatio
         
         double pdf = estimatePdf(simEnds, observations[i], percentage);
 
-        double tempMantissa = std::frexp(pdf, &tempExp);
+        // double tempMantissa = std::frexp(pdf, &tempExp);
 
-        mantissa += log2(tempMantissa);
-        exponent += tempExp;
+        // mantissa += log2(tempMantissa);
+        // exponent += tempExp;
 
-        exponent += floor(mantissa);
-        mantissa -= floor(mantissa);
+        // exponent += floor(mantissa);
+        // mantissa -= floor(mantissa);
 
         chance += log2(pdf);
    }
 
-   std::cout << "\nMantissa: " << mantissa << "   Exp:" << exponent;
+   //std::cout << "\nMantissa: " << mantissa << "   Exp:" << exponent;
 
    return chance;
 }
