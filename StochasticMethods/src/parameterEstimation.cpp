@@ -677,8 +677,7 @@ std::vector<double> polynomialParamEstimation(polynomialModel model, int paramet
 }
 
 double dtByPercentage(std::vector<double>& observations, double percentage, double input){
-    double top = -std::numeric_limits<double>::infinity();
-    double bottom = std::numeric_limits<double>::infinity();
+
 
     std::sort(observations.begin(), observations.end());
 
@@ -689,6 +688,10 @@ double dtByPercentage(std::vector<double>& observations, double percentage, doub
     std::vector<double>::iterator low = std::lower_bound(observations.begin(), observations.end(), input);
     
     int index = std::distance(observations.begin(), low);
+
+    if(index == observations.size() || index == 0){
+        return 0;
+    }
 
     int upperIndex = index + std::floor(percentage*0.5*observations.size());
     if(upperIndex > observations.size() - 1){
@@ -705,7 +708,7 @@ double dtByPercentage(std::vector<double>& observations, double percentage, doub
 
     //std::cout << "\nUpper: " << upperDistance << "   Lower: " << lowerDistance;
 
-    return std::max(upperDistance*2,lowerDistance*2);
+    return std::max(upperDistance,lowerDistance);
 }
 
 double findDt(std::vector<double>& observations, int divisions){
@@ -732,6 +735,10 @@ double estimatePdf(std::vector<double>& observations, double input, double perce
     //double dt = findDt(observations, divisions);
 
     double dt = dtByPercentage(observations, percentage, input);
+
+    if(dt == 0){
+        return 0;
+    }
 
     //dt = 0.05;
     double simLeft = input - dt;
@@ -765,18 +772,6 @@ double estimatePdf(std::vector<double>& observations, double input, double perce
 }
 
 long double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage){  
-
-   stochasticModel noVarModel = model;
-   noVarModel.betaFunction = zeroFunction;
-   
-   std::vector<double> noVarData;
-   eulerMaruyamaWithin(noVarData, noVarModel, 10);
-
-   std::vector<double> realVariance = {};
-
-   for(int i = 1; i < observations.size(); i++){
-        realVariance.push_back((observations[i] - noVarData[i]) - (observations[i-1] - noVarData[i-1]));
-   }
 
    std::vector<std::vector<double>> simData;
    std::vector<double> simEnds;

@@ -68,7 +68,7 @@ float sqrt1(const float &n) {
 }
 
 double randomPathMaker::dW(double dt){
-    return (inverseNormal(randomGenerator.d01())* sqrt1(dt));
+    return (inverseNormal(randomGenerator.d01())*sqrt1(dt));
 }
 
 std::vector<double> randomPathMaker::makePath(double intervalStart, double intervalEnd, double timeStep){

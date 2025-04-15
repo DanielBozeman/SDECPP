@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <algorithm>
 
 
 stochasticModel fitBlackScholes(std::string fileName, int dataColumn, int dataStart, int dataEnd){
@@ -340,6 +341,55 @@ stochasticModel fitRandom(std::string fileName, int dataColumn, int dataStart, i
     return model;
 }
 
+polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<double> times){
+    
+    polynomialModel model = polynomialModel(observations[0], times);
+
+    model.addTerm(1,1);
+
+    double lowestAIC = std::numeric_limits<double>::infinity();
+
+    while(true){
+
+        int nextTerm = 0;
+        double innerAIC = std::numeric_limits<double>::infinity();
+
+        polynomialModel bestModel = model;
+
+        while(true){
+            if(std::find(model.activeTerms[0].begin(), model.activeTerms[0].end(), nextTerm) != model.activeTerms[0].end()){
+                nextTerm++;
+                continue;
+            }
+            
+            model.addTerm(0,nextTerm);
+
+            model.parameters[0] = polynomialParamEstimation(model, 0, observations, 1, 200, 0.99, 250, 1, driftCost);
+            model.parameters[1] = polynomialParamEstimation(model, 1, observations, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+
+            double curAIC = model.calculateAIC(observations);
+
+            if(curAIC > innerAIC){
+                model = bestModel;
+                break;
+            }else{
+                bestModel = model;
+                innerAIC = curAIC;
+                model.removeTerm(0, nextTerm);
+                nextTerm++;
+            }
+        }
+
+        if(innerAIC > lowestAIC){
+            model.removeTerm(0, nextTerm);
+            break;
+        }else{
+            lowestAIC = innerAIC;
+        }
+    }
+
+    return model;
+}
 
 void createPath(){
     auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){

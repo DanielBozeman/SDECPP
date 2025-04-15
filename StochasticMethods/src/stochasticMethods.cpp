@@ -14,10 +14,13 @@ double zeroFunction(double& value, double& time, std::vector<double>& parameters
 double polynomialFunction(double& value, double& time, std::vector<double>& parameters){
     double total = 0;
     for(int i = 0; i < parameters.size(); i++){
-        //std::cout << "\ni: " << i;
-        //std::cout << "\nPower: " << i;
-        //std::cout << "\nParameter: " << parameters[i] << std::endl;
+        if(parameters[i] == 0){
+            continue;
+        }
         total += (parameters[i] * std::pow(value, i));
+        double temp = std::pow(value, i);
+        bool isNan = std::isnan(total);
+        int temp2 = 0;
     }
     return total;
 }
@@ -242,9 +245,23 @@ void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticMode
 
     for(int i = 1; i < model.timeInterval.size(); i++){
         double prevValue = approximation[i-1];
+        bool prevNan = std::isnan(prevValue);
         double prevTime = model.timeInterval[i-1];
         double dW = brownianPath[i] - brownianPath[i-1];
-        approximation[i] = ((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
+
+        double nextDrift = prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt;
+        if(std::isinf(nextDrift)){
+            approximation[i] = nextDrift;
+            continue;
+        }
+        else{
+            approximation[i] = nextDrift + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW;
+        }
+        double nextAlpha = model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt;
+        double nextBeta = model.betaFunction(prevValue, prevTime, model.parameters[1])*dW;
+        double nextVal = (prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW );
+        bool nextNan = std::isnan(approximation[i]);
+        //approximation[i] = ((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
     }
 
     return;

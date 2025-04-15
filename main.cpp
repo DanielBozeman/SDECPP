@@ -753,18 +753,39 @@ void testPdf(){
 void pdfEstimation(){
     std::vector<double> standardNormalVariables = {};
 
-    for(int i = 0; i < 1000000; i++){
+    for(int i = 0; i < 100000; i++){
         standardNormalVariables.push_back(randomPathMaker::dW(1));
     }
 
-    double input = 0.5;
+    double input = 4;
 
-    double estimate = estimatePdf(standardNormalVariables, input, 0.075);
+    double estimate = estimatePdf(standardNormalVariables, input, 0.02);
     //double estimate = 1;
     double truePdf = normalPDF(input, 0, 1);
     
     std::cout << "\nEstimate: " << estimate;
     std::cout << "\nPDF: " << truePdf;
+}
+
+void testPath(){
+    std::vector<double> standardNormals = {};
+
+    for(int i = 0; i < 100000; i++){
+        standardNormals.push_back(randomPathMaker::dW(1));
+    }
+
+    double sum = 0;
+    for(int i = 0; i < standardNormals.size(); i++){
+        sum += standardNormals[i];
+    }
+
+    double mean = sum/standardNormals.size();
+
+    std::cout << "\nMean is: " << mean;
+
+    std::sort(standardNormals.begin(), standardNormals.end());
+
+    std::cout << "\nMin: " << standardNormals[0] << "\nMax: " << standardNormals.back();
 }
 
 void testFits(){
@@ -808,28 +829,49 @@ void testPolynomial(){
 
     eulerMaruyamaWithin(output, polyModel, 100);
 
-    for(int i = 0; i < output.size(); i++){
-        //std::cout << "\n" << output[i];
-    }
-
-    polyModel.setTermParameter(1, 1, 0.01);
-
-    for(int i = 0; i < 8; i++){
-
-        polyModel.removeAllTerms();
-        polyModel.addTerm(1, 1);
-        polyModel.addTerm(0, i);
-
-        polyModel.parameters[0] = polynomialParamEstimation(polyModel, 0, output, 1, 200, 0.99, 250, 1, driftCost);
-        polyModel.parameters[1] = polynomialParamEstimation(polyModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
-
-        double AIC = polyModel.calculateAIC(output);
-
-        std::cout << "\nAIC for " << i << " is " << AIC;
-    }
+    polynomialModel model = fitPolynomial(output, times);
+    
     std::cout << "\nFinished";
 
+}
 
+void bugTesting(){
+
+    double initialValue = 1;
+
+    double start = 0;
+    double end = 3;
+    double dt = 0.05;
+
+    std::vector<double> times;
+
+    linearlySpacedVector(times, start, end, dt);
+
+    polynomialModel polyModel = polynomialModel(initialValue, times);
+
+    polyModel.addTerm(0, 1);
+    polyModel.addTerm(1, 1);
+
+    polyModel.setTermParameter(0, 1, 1);
+    polyModel.setTermParameter(1, 1, 0.17);
+
+    std::vector<double> output;
+
+    eulerMaruyamaWithin(output, polyModel, 100);
+
+    std::cout << "\nFinished!";   
+}
+
+void infinityTest(){
+    double inf = INFINITY;
+    inf = std::numeric_limits<double>::max();
+    double time = 0.05;
+
+    std::vector<double> params = {0,0,0,0.05};
+
+    double output = polynomialFunction(inf, time, params);
+
+    std::cout << "\nDone";
 }
 
 int main(){
@@ -862,6 +904,12 @@ int main(){
     //testFits();
 
     testPolynomial();
+
+    //bugTesting();
+
+    //infinityTest();
+
+    //testPath();
 
     std::cout << "\nDone";
 }
