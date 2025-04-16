@@ -156,11 +156,11 @@ void polynomialModel::setTermParameter(int paramSet, int term, double coefficien
     parameters[paramSet][term] = coefficient;
 }
 
-double polynomialModel::calculateAIC(std::vector<double>& observations, int numSims, int divisions, double percentage){
+std::vector<long double> polynomialModel::calculateAIC(std::vector<double>& observations, int numSims, int divisions, double percentage){
 
-    double likelihood = findLikelihood(*this, observations, numSims, divisions, percentage);
+    std::vector<long double> likelihood = findLikelihood(*this, observations, numSims, divisions, percentage);
 
-    return ((2 * (activeTerms[0].size() + activeTerms[1].size())) - 2*likelihood);
+    return {((2 * (activeTerms[0].size() + activeTerms[1].size())) - 2*likelihood[0]), likelihood[1]};
 }
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   

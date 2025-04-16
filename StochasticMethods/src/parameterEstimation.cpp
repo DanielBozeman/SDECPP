@@ -774,7 +774,9 @@ double estimatePdf(std::vector<double>& observations, double input, double perce
     return pdf;
 }
 
-long double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage){  
+std::vector<long double> findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage){  
+
+   std::vector<long double> returnVector = {0, 0};
 
    std::vector<std::vector<double>> simData;
    std::vector<double> simEnds;
@@ -808,11 +810,38 @@ long double findLikelihood(stochasticModel model, std::vector<double> observatio
         // exponent += floor(mantissa);
         // mantissa -= floor(mantissa);
 
-        chance += log(pdf);
+        returnVector[0] += log(pdf);
+
+        if(std::isinf(returnVector[0])){
+            returnVector[1] = i;
+            return returnVector;
+        }
    }
 
    //std::cout << "\nMantissa: " << mantissa << "   Exp:" << exponent;
 
-   return chance;
+   return returnVector;
 }
 
+//RETURNS TRUE IF AIC1 IS SMALLER THAN AIC2
+bool compareAIC(std::vector<long double> AIC1, std::vector<long double> AIC2){
+
+    //If both AICs are not inf then we just compare them
+    if(!std::isinf(AIC1[0]) && !std::isinf(AIC2[0])){
+        return(AIC1[0] < AIC2[0]);
+    }
+
+    //If both are inf then we compare how far they worked
+    if(std::isinf(AIC1[0]) && std::isinf(AIC2[0])){
+        return(AIC1[1] > AIC2[1]);
+    }
+
+    //If one AIC is inf but not the other then we can return true or false depending
+    if(std::isinf(AIC1[0])){
+        return false;
+    }
+    else if(std::isinf(AIC2[0])){
+        return true;
+    }
+
+}

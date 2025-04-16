@@ -40,6 +40,16 @@ std::vector<double> polynomialParamEstimation(polynomialModel model, int paramet
  */
 double estimatePdf(std::vector<double>& observations, double input, double percentage);
 
-long double findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage);
+std::vector<long double> findLikelihood(stochasticModel model, std::vector<double> observations, int numSims, int divisions, double percentage);
+
+/**
+ * @brief Returns true if AIC1 is LOWER than AIC2. If AICs are both inf then compares the point they changed to inf. 
+ * 
+ * @param AIC1 {AIC, inf timestep}
+ * @param AIC2 {AIC, inf timestep}
+ * @return true If AIC1 is lower
+ * @return false If AIC1 is not lower
+ */
+bool compareAIC(std::vector<long double> AIC1, std::vector<long double> AIC2);
 
 #endif // __PARAMETERESTIMATION_H__

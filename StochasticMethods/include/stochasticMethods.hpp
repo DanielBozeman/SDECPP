@@ -56,7 +56,7 @@ class polynomialModel : public stochasticModel{
     void randomizeParameter(int paramSet) override;
     void parameterNeighbor(int paramSet) override;
 
-    double calculateAIC(std::vector<double> &observations, int numSims = 100000, int divisions = 100, double percentage = 0.02);
+    std::vector<long double> calculateAIC(std::vector<double> &observations, int numSims = 100000, int divisions = 100, double percentage = 0.02);
 };
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters);
