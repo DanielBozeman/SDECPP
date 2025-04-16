@@ -448,7 +448,7 @@ long double driftCost(stochasticModel model, std::vector<double> &observations, 
 
     std::vector<std::vector<double>> approximations;
 
-    multipleEulerMaruyamaByReference(approximations, testModel, numSims);
+    multipleEulerMaruyamaWithin(approximations, testModel,  params[0], numSims);
 
     long double mse = multiVectorMSE(approximations, observations);
 
@@ -689,6 +689,9 @@ double dtByPercentage(std::vector<double>& observations, double percentage, doub
     
     int index = std::distance(observations.begin(), low);
 
+    double max = observations.back();
+    double min = observations[0];
+
     if(index == observations.size() || index == 0){
         return 0;
     }
@@ -796,7 +799,7 @@ long double findLikelihood(stochasticModel model, std::vector<double> observatio
         }
         
         double pdf = estimatePdf(simEnds, observations[i], percentage);
-
+    
         // double tempMantissa = std::frexp(pdf, &tempExp);
 
         // mantissa += log2(tempMantissa);
@@ -805,7 +808,7 @@ long double findLikelihood(stochasticModel model, std::vector<double> observatio
         // exponent += floor(mantissa);
         // mantissa -= floor(mantissa);
 
-        chance += log2(pdf);
+        chance += log(pdf);
    }
 
    //std::cout << "\nMantissa: " << mantissa << "   Exp:" << exponent;

@@ -9,7 +9,7 @@
     stochasticModel fitOrnstein(std::string fileName, int dataColumn, int dataStart = 0, int dataEnd = 0);
     stochasticModel fitCEV();
 
-    polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<double> times);
+    polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<double> times, int maxTerm, int divisions);
     
     void createPath();
 #endif // __MODELESTIMATIONTESTS_H__

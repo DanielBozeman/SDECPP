@@ -341,7 +341,7 @@ stochasticModel fitRandom(std::string fileName, int dataColumn, int dataStart, i
     return model;
 }
 
-polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<double> times){
+polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<double> times, int maxTerm, int divisions){
     
     polynomialModel model = polynomialModel(observations[0], times);
 
@@ -349,12 +349,16 @@ polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<dou
 
     double lowestAIC = std::numeric_limits<double>::infinity();
 
+    polynomialModel bestOverall = model;
+
     while(true){
 
         int nextTerm = 0;
         double innerAIC = std::numeric_limits<double>::infinity();
 
         polynomialModel bestModel = model;
+
+        bool notInf = false;
 
         while(true){
             if(std::find(model.activeTerms[0].begin(), model.activeTerms[0].end(), nextTerm) != model.activeTerms[0].end()){
@@ -364,12 +368,27 @@ polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<dou
             
             model.addTerm(0,nextTerm);
 
-            model.parameters[0] = polynomialParamEstimation(model, 0, observations, 1, 200, 0.99, 250, 1, driftCost);
-            model.parameters[1] = polynomialParamEstimation(model, 1, observations, 1, 100, 0.9, 100, 1, varianceCost, {20, 100});
+            for(int i = 0; i < model.parameters[0].size();i++){
+                model.parameters[0][i] = 0;
+            }
 
-            double curAIC = model.calculateAIC(observations);
+            model.parameters[0] = polynomialParamEstimation(model, 0, observations, 1, 200, 0.99, 250, 1, driftCost, {double(divisions)});
+            model.parameters[1] = polynomialParamEstimation(model, 1, observations, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500});
 
-            if(curAIC > innerAIC){
+            double curAIC = model.calculateAIC(observations, 25000, divisions);
+
+            if(!std::isinf(curAIC)){
+                notInf = true;
+            }
+
+            if(nextTerm < maxTerm && !(notInf)){
+                bestModel = model;
+                model.removeTerm(0, nextTerm);
+                nextTerm++;
+                continue;
+            }
+
+            if(curAIC >= innerAIC){
                 model = bestModel;
                 break;
             }else{
@@ -385,10 +404,11 @@ polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<dou
             break;
         }else{
             lowestAIC = innerAIC;
+            bestOverall = model;
         }
     }
 
-    return model;
+    return bestOverall;
 }
 
 void createPath(){
