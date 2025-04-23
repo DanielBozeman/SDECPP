@@ -176,6 +176,7 @@ long double normalPDF(double observation, double mean, double variance){
     //std::cout << "\npdf part: " << pdf;
 
     //std::cout << "\ne part: " << exp(-1* (((observation - mean)*(observation - mean))/(2 * variance)));
+    bool isNan = std::isnan(endPDF);
 
     return endPDF;
 }
@@ -507,6 +508,9 @@ long double varianceCost(stochasticModel model, std::vector<double>& observation
         //std::cout << "\nPDF: " << pdf;
 
         chance += log(pdf);
+
+        bool isNan = std::isnan(chance);
+        int temp = 0;
    }
 
    return -1 * chance;

@@ -777,12 +777,12 @@ void testPolynomial(){
     //testModel.addTerm(0, 1);
     testModel.addTerm(1,1);
 
-    testModel.setTermParameter(1, 1, 0.2);
+    //testModel.setTermParameter(1, 1, 0.2);
 
     std::cout << "\nFitting!";
 
     testModel = polynomialMultiEstimation(testModel, {2}, output, 1, 10000, 0.5, 1000, 1, driftCost, {double(divisions), 5000});
-    //testModel = polynomialMultiEstimation(testModel, {1}, output, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500});
+    testModel = polynomialMultiEstimation(testModel, {1}, output, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500, 0});
 
     //polynomialModel testModel = fitPolynomial(output, times, 5, divisions);
 
