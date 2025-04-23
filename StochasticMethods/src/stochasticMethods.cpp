@@ -186,6 +186,15 @@ void polynomialModel::randomizeParameter(int paramSet){
     int limitSize = abs(parameterLimits[paramSet][activeTerms[paramSet][choice]][1] - parameterLimits[paramSet][activeTerms[paramSet][choice]][0]);
 
     parameters[paramSet][activeTerms[paramSet][choice]] = (randomGenerator.next() % limitSize) + randomGenerator.d01() + std::min({parameterLimits[paramSet][activeTerms[paramSet][choice]][1], parameterLimits[paramSet][activeTerms[paramSet][choice]][0]});
+
+}
+
+void polynomialModel::randomizeAllParameters(int paramSet){
+    for(int i = 0; i < activeTerms[paramSet].size(); i++){
+        int limitSize = abs(parameterLimits[paramSet][activeTerms[paramSet][i]][1] - parameterLimits[paramSet][activeTerms[paramSet][i]][0]);
+
+        parameters[paramSet][activeTerms[paramSet][i]] = (randomGenerator.next() % limitSize) + randomGenerator.d01() + std::min({parameterLimits[paramSet][activeTerms[paramSet][i]][1], parameterLimits[paramSet][activeTerms[paramSet][i]][0]});
+    }
 }
 
 void polynomialModel::addTerm(int paramSet, int term){

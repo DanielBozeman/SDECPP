@@ -66,6 +66,7 @@ class polynomialModel : public stochasticModel{
 
     void setTermParameter(int paramSet, int term, double coefficient);
     void randomizeParameter(int paramSet) override;
+    void randomizeAllParameters(int paramSet);
     void parameterNeighbor(int paramSet) override;
 
     std::string toString();

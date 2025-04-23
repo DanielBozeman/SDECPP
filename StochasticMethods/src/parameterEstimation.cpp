@@ -445,6 +445,7 @@ long double driftCost(stochasticModel model, std::vector<double> &observations, 
 
     stochasticModel testModel = model;
     testModel.betaFunction = zeroFunction;
+    testModel.timeBeta = zeroTimeFunction;
 
     std::vector<std::vector<double>> approximations;
 
@@ -461,6 +462,7 @@ long double varianceCost(stochasticModel model, std::vector<double>& observation
 
    stochasticModel noVarModel = model;
    noVarModel.betaFunction = zeroFunction;
+   noVarModel.timeBeta = zeroTimeFunction;
    
    std::vector<double> noVarData;
    eulerMaruyamaWithin(noVarData, noVarModel, params[0]);
@@ -677,6 +679,20 @@ polynomialModel polynomialMultiEstimation(polynomialModel model, std::vector<int
     polynomialModel newModel = model;
 
     double bestCost = std::numeric_limits<double>::infinity();
+
+    for(int i = 0; i < optionalParams.back(); i++){
+        int choice = randomGenerator.next() % parameterSets.size();
+        newModel.randomizeAllParameters(parameterSets[choice]);
+
+        double cost = costFunction(newModel, observations, numSimsPerStep, optionalParams);
+
+        if(cost < bestCost){
+            bestCost = cost;
+            bestModel = newModel;
+        }
+    }
+
+    newModel = bestModel;
 
     while(temperature > tempLimit){
         for(int i = 0; i < stepsAtTemp; i++){
