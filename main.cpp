@@ -731,7 +731,7 @@ void testPolynomial(){
     double initialValue = 1;
 
     double start = 0;
-    double end = 2;
+    double end = 1;
     double dt = 0.05;
     int divisions = 10;
 
@@ -751,7 +751,7 @@ void testPolynomial(){
     // polyModel.setTermParameter(0, 4, 9);
     // polyModel.setTermParameter(0, 8, -5);
 
-    polyModel.setTermParameter(1, 1, 0.0002);
+    polyModel.setTermParameter(1, 1, 0.2);
 
     polyModel.addMultipleTerms(2, {1,2});
     polyModel.setTermParameter(2, 1, -2);
@@ -768,17 +768,17 @@ void testPolynomial(){
         std::cout << "\n" << output[i];
     }
 
-    //polynomialModel testModel = polynomialModel(output[0], times);
+    polynomialModel testModel = polynomialModel(output[0], times);
 
     //testModel.addMultipleTerms(0, 2);
     //testModel.addTerm(1,1);
 
     std::cout << "\nFitting!";
 
-    //testModel.parameters[0] = polynomialParamEstimation(testModel, 0, output, 1, 400, 0.99, 500, 1, driftCost, {double(divisions)});
-    //testModel.parameters[1] = polynomialParamEstimation(testModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500});
+    testModel = polynomialMultiParamEstimation(testModel, {0}, output, 1, 200, 0.99, 250, 1, driftCost, {double(divisions)});
+    testModel.parameters[1] = polynomialParamEstimation(testModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500});
 
-    polynomialModel testModel = fitPolynomial(output, times, 5, divisions);
+    //polynomialModel testModel = fitPolynomial(output, times, 5, divisions);
 
     //polynomialModel testModel = polyModel;
 

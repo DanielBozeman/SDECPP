@@ -109,8 +109,10 @@ stochasticModel::stochasticModel(stochastic_function function1, stochastic_funct
 stochasticModel::stochasticModel(time_function function1, time_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     timeAlpha = function1;
     timeBeta = function2;
+
     alphaFunction = zeroFunction;
     betaFunction = zeroFunction;
+
     initialValue = startValue;
     timeInterval = times;
     parameters = constants;
