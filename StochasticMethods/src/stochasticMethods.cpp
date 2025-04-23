@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <string>
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters){
     return 0;
@@ -18,6 +19,13 @@ double polynomialFunction(double& value, double& time, std::vector<double>& para
             continue;
         }
         total += (parameters[i] * std::pow(value, i));
+        if(std::isinf(total)){
+            if(std::signbit(value)){
+                return(-1 * std::numeric_limits<double>::infinity());
+            }else{
+                return std::numeric_limits<double>::infinity();
+            }
+        }
         double temp = std::pow(value, i);
         bool isNan = std::isnan(total);
         int temp2 = 0;
@@ -96,12 +104,12 @@ void polynomialModel::addTerm(int paramSet, int term){
         parameterLimits[paramSet] = {};
         parameterSteps[paramSet] = {};
         for(int i = 0; i <= term; i++){
-            parameterLimits[paramSet].push_back({0,100});
+            parameterLimits[paramSet].push_back({0,5});
             parameterSteps[paramSet].push_back(1);
             parameters[paramSet].push_back(0);
         }
         for(int i = 0; i < activeTerms[paramSet].size(); i++){
-            parameters[paramSet][activeTerms[paramSet][i]] = 0.01;
+            parameters[paramSet][activeTerms[paramSet][i]] = 0.0001;
         }
     }
 
@@ -154,6 +162,30 @@ void polynomialModel::addMultipleTerms(int paramSet, int maxTerm){
 
 void polynomialModel::setTermParameter(int paramSet, int term, double coefficient){
     parameters[paramSet][term] = coefficient;
+}
+
+std::string polynomialModel::toString(){
+    std::string returnString = "";
+
+    returnString.append("Standard Function Terms & Coefficients:");
+
+    for(int i = 0; i < activeTerms[0].size(); i++){
+        returnString.append("\n");
+        returnString.append(std::to_string(activeTerms[0][i]));
+        returnString.append(": ");
+        returnString.append(std::to_string(parameters[0][activeTerms[0][i]]));
+    }
+
+    returnString.append("\n\nDiffusions Function Terms & Coefficients:");
+
+    for(int i = 0; i < activeTerms[1].size();i++){
+        returnString.append("\n");
+        returnString.append(std::to_string(activeTerms[1][i]));
+        returnString.append(": ");
+        returnString.append(std::to_string(parameters[1][activeTerms[1][i]]));
+    }
+
+    return returnString;
 }
 
 std::vector<long double> polynomialModel::calculateAIC(std::vector<double>& observations, int numSims, int divisions, double percentage){
@@ -262,6 +294,7 @@ void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticMode
         double nextBeta = model.betaFunction(prevValue, prevTime, model.parameters[1])*dW;
         double nextVal = (prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW );
         bool nextNan = std::isnan(approximation[i]);
+        int temp = 0;
         //approximation[i] = ((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
     }
 
@@ -284,6 +317,9 @@ void eulerMaruyamaWithin(std::vector<double> &approximation, stochasticModel mod
 
     for(int i = 0; i < model.timeInterval.size()*numDivisions; i += numDivisions){
         approximation[i/numDivisions] = longApproximation[i];
+
+        bool isNan = std::isnan(longApproximation[i]);
+        int temp = 0;
         //std::cout << "\n" << newModel.timeInterval[i];
     }
 }

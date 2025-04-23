@@ -2,6 +2,7 @@
 #define __STOCHASTICMETHODS_H__
 
 #include <vector>
+#include <string>
 
 typedef double (*stochastic_function)(double&, double&, std::vector<double>&);
 
@@ -55,6 +56,8 @@ class polynomialModel : public stochasticModel{
     void setTermParameter(int paramSet, int term, double coefficient);
     void randomizeParameter(int paramSet) override;
     void parameterNeighbor(int paramSet) override;
+
+    std::string toString();
 
     std::vector<long double> calculateAIC(std::vector<double> &observations, int numSims = 100000, int divisions = 100, double percentage = 0.02);
 };

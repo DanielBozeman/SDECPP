@@ -742,37 +742,64 @@ void testPolynomial(){
     polynomialModel polyModel = polynomialModel(initialValue, times);
 
     //polyModel.addTerm(0, 1);
-    polyModel.addMultipleTerms(0, 2);
+    polyModel.addMultipleTerms(0, {1,4,8});
     polyModel.addTerm(1, 1);
 
-    polyModel.setTermParameter(0, 0, 0.5);
     polyModel.setTermParameter(0, 1, -2);
-    polyModel.setTermParameter(0, 2, 0.5);
+    polyModel.setTermParameter(0, 4, 9);
+    polyModel.setTermParameter(0, 8, -5);
+
+    double val1 = 2;
+    double val2 = 0;
+    std::cout << "\n" << polyModel.alphaFunction(val1, val2, polyModel.parameters[0]);
 
 
-    polyModel.setTermParameter(1, 1, 0.01);
-
-    polynomialModel testModel = polynomialModel(initialValue, times);
-
-    testModel.addMultipleTerms(0,2);
-
-    testModel.addTerm(1, 1);
+    polyModel.setTermParameter(1, 1, 0.0002);
 
     std::vector<double> testOutput;
     std::vector<double> output;
 
+    std::cout << "\n" << polyModel.toString();
+
     eulerMaruyamaWithin(output, polyModel, divisions);
+
+    for(int i = 0; i < output.size(); i++){
+        std::cout << "\n" << output[i];
+    }
+
+    //polynomialModel testModel = polynomialModel(output[0], times);
+
+    //testModel.addMultipleTerms(0, 2);
+    //testModel.addTerm(1,1);
+
+    std::cout << "\nFitting!";
+
+    //testModel.parameters[0] = polynomialParamEstimation(testModel, 0, output, 1, 400, 0.99, 500, 1, driftCost, {double(divisions)});
+    //testModel.parameters[1] = polynomialParamEstimation(testModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500});
+
+    polynomialModel testModel = fitPolynomial(output, times, 5, divisions);
+
+    //polynomialModel testModel = polyModel;
+
     eulerMaruyamaWithin(testOutput, testModel, divisions);
 
-    testModel.parameters[0] = polynomialParamEstimation(testModel, 0, output, 1, 200, 0.99, 250, 1, driftCost, {double(divisions)});
-    testModel.parameters[1] = polynomialParamEstimation(testModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {1, 500});
+    std::vector<long double> testAIC = polyModel.calculateAIC(output, 25000, divisions);
+    std::vector<long double> aic2 = testModel.calculateAIC(output, 25000, divisions);
 
-    eulerMaruyamaWithin(testOutput, testModel, divisions);
+    std::cout << "\nReal AIC: " << testAIC[0];
+    std::cout << "\nFit AIC: " << aic2[0];
 
-    std::vector<long double> testAIC = testModel.calculateAIC(output, 25000, divisions);
-
-    polynomialModel model = fitPolynomial(output, times, 5, divisions);
+    std::cout << "\n" << testModel.toString();
+    //polynomialModel model = fitPolynomial(output, times, 5, divisions);
     
+    std::vector<std::vector<double>> approximations;
+
+    multipleEulerMaruyamaWithin(approximations, testModel, divisions, 1000);
+
+    multiVectorToCSV(approximations, "estimationOutput.csv");
+
+    vectorToCSV(output, "dataOutput.csv");
+
     std::cout << "\nFinished";
 
 }
@@ -782,7 +809,7 @@ void bugTesting(){
     double initialValue = 1;
 
     double start = 0;
-    double end = 3;
+    double end = 10;
     double dt = 0.05;
 
     std::vector<double> times;
@@ -817,6 +844,12 @@ void infinityTest(){
 }
 
 int main(){
+
+    #ifdef __OPTIMIZE__
+    std::cout << "\nOptimization enabled!";
+    #else
+    std::cout << "\nNo optimization set!";
+    #endif
     //SAComparison();
     //varianceViewer();
     //logDifferenceTest();

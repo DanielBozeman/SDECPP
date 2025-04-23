@@ -148,11 +148,11 @@ def trueVsEst():
 
     dfEstimation = pd.read_csv("build/estimationOutput.csv", index_col=False)
     
-    dfTrue = pd.read_csv("build/trueOutput.csv", index_col=False)
+    #dfTrue = pd.read_csv("build/trueOutput.csv", index_col=False)
 
     print(dfData.shape)
     print(dfEstimation.shape)
-    print(dfTrue.shape)
+    #print(dfTrue.shape)
 
     estimateAveragePath = np.zeros(dfEstimation.shape[0])
 
@@ -163,21 +163,22 @@ def trueVsEst():
 
         estimateAveragePath[index] = average
 
-    trueAveragePath = np.zeros(dfTrue.shape[0])
+    # trueAveragePath = np.zeros(dfTrue.shape[0])
 
-    for index,row in enumerate(dfTrue.to_numpy()):
-        row = row[:-1]
+    # for index,row in enumerate(dfTrue.to_numpy()):
+    #     row = row[:-1]
 
-        average = np.median(row, axis=0)
+    #     average = np.median(row, axis=0)
 
-        trueAveragePath[index] = average
-    
+    #     trueAveragePath[index] = average
+    xvalues = np.arange(0,3,0.05)
+
     for column in dfEstimation.iloc[:,:-1]:
         values = dfEstimation[column]
 
-        plt.plot(values, color='green', alpha=0.25, linewidth = 0.5)
+        plt.plot(xvalues, values, color='green', alpha=0.25, linewidth = 0.5)
 
-    plt.plot(estimateAveragePath, color = 'yellow')
+    plt.plot(xvalues, estimateAveragePath, color = 'yellow', linewidth = 2)
 
     # for column in dfTrue.iloc[:,:-1]:
     #       values = dfTrue[column]
@@ -190,11 +191,18 @@ def trueVsEst():
 
     #print(dfData.head)
 
-    plt.plot(value, color = 'red', zorder=2, linewidth = 1)
+    plt.plot(xvalues, value, color = 'red', zorder=2, linewidth = 2)
 
-    #plt.xlim(-5,1200)
+    plt.xlim(0,3)
 
-    #plt.ylim(-5,15)
+    plt.ylim(0,25)
+
+    # Add x-axis title
+    plt.xlabel("Time", fontdict={'fontsize': 12, 'fontweight': 'bold', 'color': 'black'}, labelpad=10, loc='center')
+
+    # Add y-axis title
+    plt.ylabel("Value", fontdict={'fontsize': 12, 'fontweight': 'bold', 'color': 'black'}, labelpad=10, loc='center')
+
 
     #plt.yticks(np.arange(-5,16,2))
 
@@ -204,12 +212,12 @@ def trueVsEst():
 
 if __name__ == "__main__":
     #multiGrayLastFull()
-    standardPlotter()
+    #standardPlotter()
     #multiGrayAveragePlot()
     #twoVectorAgainst()
     #twoVectorHist()
     #normalPlotter()
-    #trueVsEst()
+    trueVsEst()
 
     
     

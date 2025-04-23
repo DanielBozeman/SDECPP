@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
+
+string(REPLACE "-O2" "-O0" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+string(REPLACE "-O2" "-O0" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+
 project(MainProject)
 
 include_directories(RandomUtils)
@@ -18,3 +22,5 @@ endif()
 
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} RandomUtils StochasticMethods FileUtils)
+
+target_compile_options(${PROJECT_NAME} PRIVATE "-O2")

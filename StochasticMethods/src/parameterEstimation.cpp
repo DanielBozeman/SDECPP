@@ -452,35 +452,18 @@ long double driftCost(stochasticModel model, std::vector<double> &observations, 
 
     long double mse = multiVectorMSE(approximations, observations);
 
+    bool isNan = std::isnan(mse);
+
     return mse;
 }
 
 long double varianceCost(stochasticModel model, std::vector<double>& observations, int numSims, std::vector<double> params){
-  
-   auto binarySearch = [](std::vector<double>& array, int value){
-        int low = 0;
-        int high = array.size() - 1;
-        int rank = 0;
-
-        while(low <= high){
-            int mid = low + (high - low)/2;
-
-            if(array[mid] < value){
-                rank = mid + 1;
-                low = mid + 1;
-            }else{
-                high = mid - 1;
-            }
-        }
-
-        return rank;
-   };
 
    stochasticModel noVarModel = model;
    noVarModel.betaFunction = zeroFunction;
    
    std::vector<double> noVarData;
-   eulerMaruyamaWithin(noVarData, noVarModel, 10);
+   eulerMaruyamaWithin(noVarData, noVarModel, params[0]);
 
    std::vector<double> realVariance = {};
 
@@ -611,7 +594,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
 
 std::vector<double> polynomialParamEstimation(polynomialModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams){
     
-    int moveLimit = 500;
+    int moveLimit = 1000;
 
     int notMovedIn = 0;
     
@@ -635,6 +618,7 @@ std::vector<double> polynomialParamEstimation(polynomialModel model, int paramet
             cost = costFunction(newModel, observations, numSimsPerStep, optionalParams);
 
             //std::cout << "\nCur cost: " << cost;
+            //std::cout << "\nNot moved in: " << notMovedIn; 
             //std::cout << "\nCur param" << newModel.parameters[0][0];
 
             if((cost == 0 || abs(cost) == std::numeric_limits<double>::infinity()) && (oldCost == 0 || abs(oldCost) == std::numeric_limits<double>::infinity())){
