@@ -195,10 +195,10 @@ void polynomialModel::addTerm(int paramSet, int term){
         activeTerms[paramSet].push_back(term);
     }
 
-    if(paramSet == 0){
+    if(paramSet == 0 || paramSet == 2){
         for(int i = parameters[paramSet].size(); i <= term; i++){
-            parameterLimits[paramSet].push_back({-100,100});
-            parameterSteps[paramSet].push_back(1);
+            parameterLimits[paramSet].push_back({-20,20});
+            parameterSteps[paramSet].push_back(5);
             parameters[paramSet].push_back(0);
         }
     }else{
@@ -276,6 +276,15 @@ std::string polynomialModel::toString(){
         returnString.append(std::to_string(activeTerms[0][i]));
         returnString.append(": ");
         returnString.append(std::to_string(parameters[0][activeTerms[0][i]]));
+    }
+
+    returnString.append("\n\nTime Parameters & Coefficients:");
+
+    for(int i = 0; i < activeTerms[2].size(); i++){
+        returnString.append("\n");
+        returnString.append(std::to_string(activeTerms[2][i]));
+        returnString.append(": ");
+        returnString.append(std::to_string(parameters[2][activeTerms[2][i]]));
     }
 
     returnString.append("\n\nDiffusions Function Terms & Coefficients:");

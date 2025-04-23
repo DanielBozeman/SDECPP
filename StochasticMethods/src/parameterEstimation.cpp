@@ -660,6 +660,77 @@ std::vector<double> polynomialParamEstimation(polynomialModel model, int paramet
     return model.parameters[parameterSet];
 }
 
+polynomialModel polynomialMultiEstimation(polynomialModel model, std::vector<int> parameterSets, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams){
+
+    int moveLimit = 1000;
+
+    int notMovedIn = 0;
+    
+    double temperature = startingTemp;
+
+    double cost;
+    double prob;
+    double oldCost = std::numeric_limits<double>::infinity();
+
+    polynomialModel currentModel = model;
+    polynomialModel bestModel = model;
+    polynomialModel newModel = model;
+
+    double bestCost = std::numeric_limits<double>::infinity();
+
+    while(temperature > tempLimit){
+        for(int i = 0; i < stepsAtTemp; i++){
+
+            notMovedIn++;
+
+            cost = costFunction(newModel, observations, numSimsPerStep, optionalParams);
+
+            //std::cout << "\nCur cost: " << cost;
+            //std::cout << "\nNot moved in: " << notMovedIn; 
+            //std::cout << "\nCur param" << newModel.toString();
+
+            if((cost == 0 || abs(cost) == std::numeric_limits<double>::infinity()) && (oldCost == 0 || abs(oldCost) == std::numeric_limits<double>::infinity())){
+                int choice = randomGenerator.next() % parameterSets.size();
+                newModel.randomizeParameter(parameterSets[choice]);
+                //std::cout << "\nIndeterminate cost!";
+                continue;
+            }else{
+                prob = acceptanceProbability(cost, oldCost, temperature);  
+                //std::cout << "\nCur prob: " << prob;     
+            }
+
+            if(prob > randomGenerator.d01()){
+                oldCost = cost;
+                currentModel = newModel;
+            }
+
+            if(cost < bestCost){
+                notMovedIn = 0;
+                //std::cout << "\nBest cost: " << cost << "\nBest model: \n" << bestModel.toString();
+                bestModel = currentModel;
+                bestCost = cost;
+            }
+
+            if(notMovedIn > moveLimit){
+                return bestModel;
+            }
+
+            int choice = randomGenerator.next() % parameterSets.size();
+            newModel.parameterNeighbor(parameterSets[choice]);
+            //newModel.randomizeParameter(parameterSets[choice]);
+            //currentModel.parameterNeighbor(parameterSet);
+            //newModel.parameters[parameterSet] = currentModel.parameters[parameterSet];
+        }
+
+        temperature -= coolingRate;
+        //std::cout << "\nTemperature: " << temperature;
+    }
+
+    return bestModel; 
+
+}
+
+
 double dtByPercentage(std::vector<double>& observations, double percentage, double input){
 
 

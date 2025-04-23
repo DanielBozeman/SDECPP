@@ -171,14 +171,16 @@ def trueVsEst():
     #     average = np.median(row, axis=0)
 
     #     trueAveragePath[index] = average
-    xvalues = np.arange(0,3,0.05)
+    # xvalues = np.arange(0,3,0.05)
 
     for column in dfEstimation.iloc[:,:-1]:
         values = dfEstimation[column]
 
-        plt.plot(xvalues, values, color='green', alpha=0.25, linewidth = 0.5)
+        #plt.plot(xvalues, values, color='green', alpha=0.25, linewidth = 0.5)
+        plt.plot(values, color='green', alpha = 0.25, linewidth=0.5)
 
-    plt.plot(xvalues, estimateAveragePath, color = 'yellow', linewidth = 2)
+    #plt.plot(xvalues, estimateAveragePath, color = 'yellow', linewidth = 2)
+    plt.plot(estimateAveragePath, color='yellow', linewidth=3)
 
     # for column in dfTrue.iloc[:,:-1]:
     #       values = dfTrue[column]
@@ -191,11 +193,12 @@ def trueVsEst():
 
     #print(dfData.head)
 
-    plt.plot(xvalues, value, color = 'red', zorder=2, linewidth = 2)
+    #plt.plot(xvalues, value, color = 'red', zorder=2, linewidth = 2)
+    plt.plot(value, color='red', zorder=2, linewidth=2)
 
-    plt.xlim(0,3)
+    #plt.xlim(0,3)
 
-    plt.ylim(0,25)
+    #plt.ylim(0,25)
 
     # Add x-axis title
     plt.xlabel("Time", fontdict={'fontsize': 12, 'fontweight': 'bold', 'color': 'black'}, labelpad=10, loc='center')

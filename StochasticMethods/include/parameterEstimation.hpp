@@ -28,6 +28,7 @@ std::vector<double> paramEstimation(stochasticModel model, int parameterSet, std
 
 std::vector<double> polynomialParamEstimation(polynomialModel model, int parameterSet, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams = {});
 
+polynomialModel polynomialMultiEstimation(polynomialModel model, std::vector<int> parameterSets, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams);
 
 
 /**

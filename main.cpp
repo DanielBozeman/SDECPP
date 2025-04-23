@@ -751,7 +751,7 @@ void testPolynomial(){
     // polyModel.setTermParameter(0, 4, 9);
     // polyModel.setTermParameter(0, 8, -5);
 
-    polyModel.setTermParameter(1, 1, 0.0002);
+    polyModel.setTermParameter(1, 1, 0.2);
 
     polyModel.addMultipleTerms(2, {1,2});
     polyModel.setTermParameter(2, 1, -2);
@@ -768,27 +768,29 @@ void testPolynomial(){
         std::cout << "\n" << output[i];
     }
 
-    //polynomialModel testModel = polynomialModel(output[0], times);
+    polynomialModel testModel = polynomialModel(output[0], times);
 
-    //testModel.addMultipleTerms(0, 2);
-    //testModel.addTerm(1,1);
+    testModel.addMultipleTerms(2, {1,2});
+    testModel.addTerm(1,1);
+
+    testModel.setTermParameter(1, 1, 0.2);
 
     std::cout << "\nFitting!";
 
-    //testModel.parameters[0] = polynomialParamEstimation(testModel, 0, output, 1, 400, 0.99, 500, 1, driftCost, {double(divisions)});
+    testModel = polynomialMultiEstimation(testModel, {2}, output, 1, 5000, 2, 1000, 1, driftCost, {double(divisions)});
     //testModel.parameters[1] = polynomialParamEstimation(testModel, 1, output, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500});
 
-    polynomialModel testModel = fitPolynomial(output, times, 5, divisions);
+    //polynomialModel testModel = fitPolynomial(output, times, 5, divisions);
 
     //polynomialModel testModel = polyModel;
 
     eulerMaruyamaWithin(testOutput, testModel, divisions);
 
-    std::vector<long double> testAIC = polyModel.calculateAIC(output, 25000, divisions);
-    std::vector<long double> aic2 = testModel.calculateAIC(output, 25000, divisions);
+    // std::vector<long double> testAIC = polyModel.calculateAIC(output, 25000, divisions);
+    // std::vector<long double> aic2 = testModel.calculateAIC(output, 25000, divisions);
 
-    std::cout << "\nReal AIC: " << testAIC[0];
-    std::cout << "\nFit AIC: " << aic2[0];
+    // std::cout << "\nReal AIC: " << testAIC[0];
+    // std::cout << "\nFit AIC: " << aic2[0];
 
     std::cout << "\n" << testModel.toString();
     //polynomialModel model = fitPolynomial(output, times, 5, divisions);
