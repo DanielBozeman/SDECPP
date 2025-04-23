@@ -52,6 +52,9 @@ class polynomialModel : public stochasticModel{
 
     polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{},{}}, std::vector<std::vector<int>> usedTerms= {{},{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{},{}}, std::vector<std::vector<double>> stepSizes = {{},{},{}});  
 
+    polynomialModel(time_function alpha, time_function beta, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{},{}}, std::vector<std::vector<int>> usedTerms= {{},{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{},{}}, std::vector<std::vector<double>> stepSizes = {{},{},{}});  
+
+
     void addNextTerm(int paramSet);
     void addTerm(int paramSet, int term);
     void addMultipleTerms(int paramSet, std::vector<int> terms);
@@ -83,6 +86,8 @@ double polynomialTimeFunction(double& value, double& time, std::vector<double>& 
 double zeroTimeFunction(double& value, double& time, std::vector<double>& valueParams, std::vector<double>& timeParams);
 
 double polynomialNoTimeFunction(double&value, double& time, std::vector<double>& parameters, std::vector<double>& timeParams);
+
+double polynomialWithXFunction(double& value, double& time, std::vector<double>& parameters, std::vector<double>& timeParams);
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h);
 

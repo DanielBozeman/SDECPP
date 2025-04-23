@@ -739,7 +739,7 @@ void testPolynomial(){
 
     linearlySpacedVector(times, start, end, dt);
     
-    polynomialModel polyModel = polynomialModel(initialValue, times);
+    polynomialModel polyModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction,initialValue, times);
 
     //olyModel.addTerm(0, 1);
     //polyModel.addMultipleTerms(0, {1,4,8});
@@ -751,7 +751,7 @@ void testPolynomial(){
     // polyModel.setTermParameter(0, 4, 9);
     // polyModel.setTermParameter(0, 8, -5);
 
-    polyModel.setTermParameter(1, 1, 0.0002);
+    polyModel.setTermParameter(1, 1, 0.2);
 
     polyModel.addMultipleTerms(2, {1,2});
     polyModel.setTermParameter(2, 1, 2);
@@ -771,13 +771,13 @@ void testPolynomial(){
         std::cout << "\n" << output[i];
     }
 
-    polynomialModel testModel = polynomialModel(output[0], times);
+    polynomialModel testModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction, output[0], times);
 
     testModel.addMultipleTerms(2, {1,2});
     //testModel.addTerm(0, 1);
     testModel.addTerm(1,1);
 
-    testModel.setTermParameter(1, 1, 0.0002);
+    testModel.setTermParameter(1, 1, 0.2);
 
     std::cout << "\nFitting!";
 

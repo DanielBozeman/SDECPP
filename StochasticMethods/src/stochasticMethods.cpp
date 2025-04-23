@@ -92,6 +92,10 @@ double polynomialTimeFunction(double& value, double& time, std::vector<double>& 
     return total;
 }
 
+double polynomialWithXFunction(double& value, double& time, std::vector<double>& valueParams, std::vector<double>& timeParams){
+    return polynomialTimeFunction(value, time, valueParams, timeParams) * value;
+}
+
 stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     alphaFunction = function1;
     betaFunction = function2;
@@ -170,6 +174,13 @@ polynomialModel::polynomialModel(double startValue, std::vector<double> times, s
     activeTerms = usedTerms;
     //stochasticModel(polynomialFunction, polynomialFunction, startValue, times, constants, constantLimits, stepSizes); 
 }
+
+polynomialModel::polynomialModel(time_function alpha, time_function beta, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<int>> usedTerms, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes):stochasticModel(alpha , beta, startValue, times, constants, constantLimits, stepSizes){
+    activeTerms = usedTerms;
+    //stochasticModel(polynomialFunction, polynomialFunction, startValue, times, constants, constantLimits, stepSizes); 
+}
+
+
 
 void polynomialModel::parameterNeighbor(int paramSet){
     int choice = randomGenerator.next() % activeTerms[paramSet].size();
