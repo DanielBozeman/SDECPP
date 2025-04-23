@@ -33,6 +33,65 @@ double polynomialFunction(double& value, double& time, std::vector<double>& para
     return total;
 }
 
+double zeroTimeFunction(double& value, double& time, std::vector<double>& valueParams, std::vector<double>& timeParams){
+    return 0;
+}
+
+double polynomialNoTimeFunction(double&value, double& time, std::vector<double>& parameters, std::vector<double>& timeParams){
+    double total = 0;
+    for(int i = 0; i < parameters.size(); i++){
+        if(parameters[i] == 0){
+            continue;
+        }
+        total += (parameters[i] * std::pow(value, i));
+        if(std::isinf(total)){
+            if(std::signbit(value)){
+                return(-1 * std::numeric_limits<double>::infinity());
+            }else{
+                return std::numeric_limits<double>::infinity();
+            }
+        }
+        double temp = std::pow(value, i);
+        bool isNan = std::isnan(total);
+        int temp2 = 0;
+    }
+    return total;
+}
+
+double polynomialTimeFunction(double& value, double& time, std::vector<double>& valueParams, std::vector<double>& timeParams){
+    double total = 0;
+    for(int i = 0; i < valueParams.size(); i++){
+        if(valueParams[i] == 0){
+            continue;
+        }
+        total += (valueParams[i] * std::pow(value, i));
+        if(std::isinf(total)){
+            if(std::signbit(value)){
+                return(-1 * std::numeric_limits<double>::infinity());
+            }else{
+                return std::numeric_limits<double>::infinity();
+            }
+        }
+        double temp = std::pow(value, i);
+        bool isNan = std::isnan(total);
+        int temp2 = 0;
+    }
+    for(int i = 0; i < timeParams.size(); i++){
+        if(timeParams[i] == 0){
+            continue;
+        }
+        total += (timeParams[i] * std::pow(time, i));
+        if(std::isinf(total)){
+            if(std::signbit(value)){
+                return(-1 * std::numeric_limits<double>::infinity());
+            }else{
+                return std::numeric_limits<double>::infinity();
+            }
+        }
+    }
+    return total;
+}
+
 stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     alphaFunction = function1;
     betaFunction = function2;
@@ -41,6 +100,45 @@ stochasticModel::stochasticModel(stochastic_function function1, stochastic_funct
     parameters = constants;
     parameterLimits = constantLimits;
     parameterSteps = stepSizes;
+
+    isTime = false;
+}
+
+stochasticModel::stochasticModel(time_function function1, time_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
+    timeAlpha = function1;
+    timeBeta = function2;
+    initialValue = startValue;
+    timeInterval = times;
+    parameters = constants;
+    while(parameters.size() < 3){
+        parameters.push_back({});
+    }
+    parameterLimits = constantLimits;
+    while(parameterLimits.size() < 3){
+        parameterLimits.push_back({});
+    }
+    parameterSteps = stepSizes;
+    while(parameterSteps.size() < 3){
+        parameterSteps.push_back({});
+    }
+
+    isTime = true;
+}
+
+double stochasticModel::calculateAlpha(double value, double time){
+    if(isTime){
+        return timeAlpha(value, time, parameters[0], parameters[2]);
+    }else{
+        return alphaFunction(value, time, parameters[0]);
+    }
+}
+
+double stochasticModel::calculateBeta(double value, double time){
+    if(isTime){
+        return timeBeta(value, time, parameters[1], parameters[2]);
+    }else{
+        return betaFunction(value, time, parameters[1]);
+    }
 }
 
 void stochasticModel::setParameters(std::vector<std::vector<double>> constants){
@@ -64,7 +162,7 @@ void stochasticModel::randomizeParameter(int paramSet){
     parameters[paramSet][choice] = (randomGenerator.next() % limitSize) + randomGenerator.d01() + std::min({parameterLimits[paramSet][choice][1], parameterLimits[paramSet][choice][0]});
 }
 
-polynomialModel::polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<int>> usedTerms, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes):stochasticModel(polynomialFunction, polynomialFunction, startValue, times, constants, constantLimits, stepSizes){
+polynomialModel::polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<int>> usedTerms, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes):stochasticModel(polynomialTimeFunction, polynomialNoTimeFunction, startValue, times, constants, constantLimits, stepSizes){
     activeTerms = usedTerms;
     //stochasticModel(polynomialFunction, polynomialFunction, startValue, times, constants, constantLimits, stepSizes); 
 }
@@ -282,19 +380,15 @@ void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticMode
         double prevTime = model.timeInterval[i-1];
         double dW = brownianPath[i] - brownianPath[i-1];
 
-        double nextDrift = prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt;
+        double nextDrift = prevValue + model.calculateAlpha(prevValue, prevTime)*dt;
+        double nextBeta = model.calculateBeta(prevValue, prevTime)*dW;
         if(std::isinf(nextDrift)){
             approximation[i] = nextDrift;
             continue;
         }
         else{
-            approximation[i] = nextDrift + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW;
+            approximation[i] = nextDrift + model.calculateBeta(prevValue, prevTime)*dW;
         }
-        double nextAlpha = model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt;
-        double nextBeta = model.betaFunction(prevValue, prevTime, model.parameters[1])*dW;
-        double nextVal = (prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW );
-        bool nextNan = std::isnan(approximation[i]);
-        int temp = 0;
         //approximation[i] = ((prevValue + model.alphaFunction(prevValue, prevTime, model.parameters[0])*dt + model.betaFunction(prevValue, prevTime, model.parameters[1])*dW ));
     }
 

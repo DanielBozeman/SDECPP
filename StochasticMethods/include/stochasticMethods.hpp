@@ -6,6 +6,7 @@
 
 typedef double (*stochastic_function)(double&, double&, std::vector<double>&);
 
+typedef double (*time_function)(double&, double&, std::vector<double>&, std::vector<double>&);
 
 /**
  * @brief Object representing a stochastic differential equation
@@ -17,6 +18,15 @@ class stochasticModel{
     public:
     stochastic_function alphaFunction;
     stochastic_function betaFunction;
+
+    time_function timeAlpha;
+    time_function timeBeta;
+
+    bool isTime;
+
+    double calculateAlpha(double value, double times);
+    double calculateBeta(double value, double times);
+
     double initialValue;
     std::vector<double> timeInterval;
     std::vector<std::vector<double>> parameters;
@@ -24,7 +34,7 @@ class stochasticModel{
     std::vector<std::vector<double>> parameterSteps;
 
     stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
-
+    stochasticModel(time_function function1, time_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
     
     void setParameters(std::vector<std::vector<double>> constants);  
     virtual void randomizeParameter(int paramSet);
@@ -39,7 +49,7 @@ class polynomialModel : public stochasticModel{
 
     std::vector<std::vector<int>> activeTerms;
 
-    polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{}}, std::vector<std::vector<int>> usedTerms= {{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{}}, std::vector<std::vector<double>> stepSizes = {{},{}});  
+    polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{}}, std::vector<std::vector<int>> usedTerms= {{},{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{}}, std::vector<std::vector<double>> stepSizes = {{},{}});  
 
     void addNextTerm(int paramSet);
     void addTerm(int paramSet, int term);
@@ -65,6 +75,8 @@ class polynomialModel : public stochasticModel{
 double zeroFunction(double& value, double& time, std::vector<double>& parameters);
 
 double polynomialFunction(double& value, double& time, std::vector<double>& parameters);
+
+double polynomialTimeFunction(double& value, double& time, std::vector<double>& valueParams, std::vector<double>& timeParams);
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h);
 

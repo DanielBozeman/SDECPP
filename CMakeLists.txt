@@ -23,4 +23,4 @@ endif()
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} RandomUtils StochasticMethods FileUtils)
 
-target_compile_options(${PROJECT_NAME} PRIVATE "-O2")
+target_compile_options(${PROJECT_NAME} PRIVATE "-O0")

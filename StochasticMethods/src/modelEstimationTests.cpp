@@ -341,6 +341,110 @@ stochasticModel fitRandom(std::string fileName, int dataColumn, int dataStart, i
     return model;
 }
 
+polynomialModel fitTimePolynomial(std::vector<double> &observations, std::vector<double> times, int maxTerm, int divisions){
+    polynomialModel model = polynomialModel(observations[0], times);
+
+    model.addTerm(1,1);
+
+    std::vector<long double> lowestAIC = {std::numeric_limits<double>::infinity(), 0};
+
+    polynomialModel bestOverall = model;
+
+ 
+    while(true){
+
+        int nextTerm = 0;
+        std::vector<long double> innerAIC = {std::numeric_limits<double>::infinity(), 0};
+
+        polynomialModel bestModel = model;
+
+        bool notInf = false;  
+
+        std::vector<int> terms = {0,2};
+
+        while(true){
+            for(int i = 0; i < terms.size(); i++){
+
+                if(std::find(model.activeTerms[terms[i]].begin(), model.activeTerms[terms[i]].end(), nextTerm) != model.activeTerms[terms[i]].end()){
+                    continue;
+                }
+
+                model.addTerm(i,nextTerm);
+                model.removeTerm(1,1);
+                model.addTerm(1,1);               
+
+                for(int j = 0; j < model.parameters[terms[i]].size(); j++){
+                    model.parameters[terms[j]][i] = 0;
+                }
+
+            }
+
+            nextTerm++;
+        }
+
+        while(true){
+            if(std::find(model.activeTerms[0].begin(), model.activeTerms[0].end(), nextTerm) != model.activeTerms[0].end()){
+                nextTerm++;
+                continue;
+            }
+            
+            model.addTerm(0,nextTerm);
+            model.removeTerm(1,1);
+            model.addTerm(1,1);
+
+            for(int i = 0; i < model.parameters[0].size();i++){
+                model.parameters[0][i] = 0;
+            }
+            
+            
+            model.parameters[0] = polynomialParamEstimation(model, 0, observations, 1, 200, 0.99, 250, 1, driftCost, {double(divisions)});
+            
+            bool zeroTerm = false;
+            for(int i = 0; i < model.activeTerms[0].size(); i++){
+                if(model.parameters[0][model.activeTerms[0][i]] == 0.0){
+                    zeroTerm = true;
+                }
+            }
+
+            if(zeroTerm){
+                model.removeTerm(0, nextTerm);
+                continue;
+            }
+            
+
+            model.parameters[1] = polynomialParamEstimation(model, 1, observations, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500});
+
+            std::cout << "\nCurrent Model is: \n" << model.toString();
+
+            std::vector<long double> curAIC = model.calculateAIC(observations, 25000, divisions);
+            
+            std::cout << "\nCurent AIC is: " << curAIC[0] << " , " << curAIC[1];
+            //if(!std::isinf(curAIC[0])){
+            //    notInf = true;
+            //}
+
+            //if(nextTerm < maxTerm && !(notInf)){
+            //    bestModel = model;
+            //    model.removeTerm(0, nextTerm);
+            //    nextTerm++;
+            //    continue;
+            //}
+
+            //if(curAIC >= innerAIC){
+            if(!compareAIC(curAIC, innerAIC)){
+                model = bestModel;
+                break;
+            }else{
+                bestModel = model;
+                innerAIC = curAIC;
+                model.removeTerm(0, nextTerm);
+                nextTerm++;
+            }
+        }
+
+    }
+}
+
 polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<double> times, int maxTerm, int divisions){
     
     polynomialModel model = polynomialModel(observations[0], times);
