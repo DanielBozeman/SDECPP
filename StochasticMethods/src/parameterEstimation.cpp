@@ -828,4 +828,5 @@ bool compareAIC(std::vector<long double> AIC1, std::vector<long double> AIC2){
         return true;
     }
 
+    return false;
 }
