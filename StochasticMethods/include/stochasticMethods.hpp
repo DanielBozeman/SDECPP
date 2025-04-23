@@ -34,6 +34,7 @@ class stochasticModel{
     std::vector<std::vector<double>> parameterSteps;
 
     stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
+    
     stochasticModel(time_function function1, time_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits = {}, std::vector<std::vector<double>> stepSizes = {});  
     
     void setParameters(std::vector<std::vector<double>> constants);  
@@ -49,7 +50,7 @@ class polynomialModel : public stochasticModel{
 
     std::vector<std::vector<int>> activeTerms;
 
-    polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{}}, std::vector<std::vector<int>> usedTerms= {{},{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{}}, std::vector<std::vector<double>> stepSizes = {{},{}});  
+    polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{},{}}, std::vector<std::vector<int>> usedTerms= {{},{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{},{}}, std::vector<std::vector<double>> stepSizes = {{},{},{}});  
 
     void addNextTerm(int paramSet);
     void addTerm(int paramSet, int term);
@@ -77,6 +78,10 @@ double zeroFunction(double& value, double& time, std::vector<double>& parameters
 double polynomialFunction(double& value, double& time, std::vector<double>& parameters);
 
 double polynomialTimeFunction(double& value, double& time, std::vector<double>& valueParams, std::vector<double>& timeParams);
+
+double zeroTimeFunction(double& value, double& time, std::vector<double>& valueParams, std::vector<double>& timeParams);
+
+double polynomialNoTimeFunction(double&value, double& time, std::vector<double>& parameters, std::vector<double>& timeParams);
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h);
 

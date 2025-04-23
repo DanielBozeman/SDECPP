@@ -95,6 +95,8 @@ double polynomialTimeFunction(double& value, double& time, std::vector<double>& 
 stochasticModel::stochasticModel(stochastic_function function1, stochastic_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     alphaFunction = function1;
     betaFunction = function2;
+    timeAlpha = zeroTimeFunction;
+    timeBeta = zeroTimeFunction;
     initialValue = startValue;
     timeInterval = times;
     parameters = constants;
@@ -107,6 +109,10 @@ stochasticModel::stochasticModel(stochastic_function function1, stochastic_funct
 stochasticModel::stochasticModel(time_function function1, time_function function2, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants, std::vector<std::vector<std::vector<double>>> constantLimits, std::vector<std::vector<double>> stepSizes){
     timeAlpha = function1;
     timeBeta = function2;
+
+    alphaFunction = zeroFunction;
+    betaFunction = zeroFunction;
+
     initialValue = startValue;
     timeInterval = times;
     parameters = constants;
@@ -381,7 +387,6 @@ void eulerMaruyamaByReference(std::vector<double> &approximation, stochasticMode
         double dW = brownianPath[i] - brownianPath[i-1];
 
         double nextDrift = prevValue + model.calculateAlpha(prevValue, prevTime)*dt;
-        double nextBeta = model.calculateBeta(prevValue, prevTime)*dW;
         if(std::isinf(nextDrift)){
             approximation[i] = nextDrift;
             continue;

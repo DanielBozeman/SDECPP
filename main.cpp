@@ -741,22 +741,21 @@ void testPolynomial(){
     
     polynomialModel polyModel = polynomialModel(initialValue, times);
 
-    polyModel.addTerm(0, 1);
-    //polyModel.addMultipleTerms(2, {0,2,4});
+    //olyModel.addTerm(0, 1);
+    //polyModel.addMultipleTerms(0, {1,4,8});
     polyModel.addTerm(1, 1);
 
-    polyModel.setTermParameter(0, 1, 1);
+    //polyModel.setTermParameter(0, 1, 1);
 
-    //polyModel.setTermParameter(2, 4, -5);
-    //polyModel.setTermParameter(2, 2, 9);
-    //polyModel.setTermParameter(2, 0, -2);
-
-    double val1 = 0;
-    double val2 = 2;
-    std::cout << "\n" << polyModel.calculateAlpha(val1, val2);
-
+    // polyModel.setTermParameter(0, 1, -2);
+    // polyModel.setTermParameter(0, 4, 9);
+    // polyModel.setTermParameter(0, 8, -5);
 
     polyModel.setTermParameter(1, 1, 0.2);
+
+    polyModel.addMultipleTerms(2, {1,2});
+    polyModel.setTermParameter(2, 1, -2);
+    polyModel.setTermParameter(2, 2, 1.5);
 
     std::vector<double> testOutput;
     std::vector<double> output;
@@ -811,7 +810,7 @@ void bugTesting(){
     double initialValue = 1;
 
     double start = 0;
-    double end = 10;
+    double end = 1;
     double dt = 0.05;
 
     std::vector<double> times;
