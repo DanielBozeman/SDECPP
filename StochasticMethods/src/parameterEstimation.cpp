@@ -668,6 +668,14 @@ std::vector<double> polynomialParamEstimation(polynomialModel model, int paramet
 
 polynomialModel polynomialMultiEstimation(polynomialModel model, std::vector<int> parameterSets, std::vector<double> observations, int numSimsPerStep, double startingTemp, double coolingRate, int stepsAtTemp, double tempLimit, modelCostFunction costFunction, std::vector<double> optionalParams){
 
+    std::vector<int> availableParams = {};
+
+    for(int i = 0; i < parameterSets.size(); i++){
+        if(model.activeTerms[parameterSets[i]].size() > 0){
+            availableParams.push_back(parameterSets[i]);
+        }
+    }
+
     int moveLimit = 1000;
 
     int notMovedIn = 0;
@@ -685,8 +693,8 @@ polynomialModel polynomialMultiEstimation(polynomialModel model, std::vector<int
     double bestCost = std::numeric_limits<double>::infinity();
 
     for(int i = 0; i < optionalParams.back(); i++){
-        int choice = randomGenerator.next() % parameterSets.size();
-        newModel.randomizeAllParameters(parameterSets[choice]);
+        int choice = randomGenerator.next() % availableParams.size();
+        newModel.randomizeAllParameters(availableParams[choice]);
 
         double cost = costFunction(newModel, observations, numSimsPerStep, optionalParams);
 
@@ -710,8 +718,8 @@ polynomialModel polynomialMultiEstimation(polynomialModel model, std::vector<int
             //std::cout << "\nCur param" << newModel.toString();
 
             if((cost == 0 || abs(cost) == std::numeric_limits<double>::infinity()) && (oldCost == 0 || abs(oldCost) == std::numeric_limits<double>::infinity())){
-                int choice = randomGenerator.next() % parameterSets.size();
-                newModel.randomizeParameter(parameterSets[choice]);
+                int choice = randomGenerator.next() % availableParams.size();
+                newModel.randomizeParameter(availableParams[choice]);
                 //std::cout << "\nIndeterminate cost!";
                 continue;
             }else{
@@ -735,11 +743,8 @@ polynomialModel polynomialMultiEstimation(polynomialModel model, std::vector<int
                 return bestModel;
             }
 
-            int choice = randomGenerator.next() % parameterSets.size();
-            newModel.parameterNeighbor(parameterSets[choice]);
-            //newModel.randomizeParameter(parameterSets[choice]);
-            //currentModel.parameterNeighbor(parameterSet);
-            //newModel.parameters[parameterSet] = currentModel.parameters[parameterSet];
+            int choice = randomGenerator.next() % availableParams.size();
+            newModel.parameterNeighbor(availableParams[choice]);
         }
 
         temperature -= coolingRate;

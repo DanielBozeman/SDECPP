@@ -731,7 +731,7 @@ void testPolynomial(){
     double initialValue = 1;
 
     double start = 0;
-    double end = 4;
+    double end = 1;
     double dt = 0.05;
     int divisions = 10;
 
@@ -741,24 +741,10 @@ void testPolynomial(){
     
     polynomialModel polyModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction,initialValue, times);
 
-    //olyModel.addTerm(0, 1);
-    //polyModel.addMultipleTerms(0, {1,4,8});
-    polyModel.addTerm(1, 1);
+    polyModel.addTerm(0, 0);
 
-    //polyModel.setTermParameter(0, 1, 1);
+    polyModel.setTermParameter(0, 0, 1);
 
-    // polyModel.setTermParameter(0, 1, -2);
-    // polyModel.setTermParameter(0, 4, 9);
-    // polyModel.setTermParameter(0, 8, -5);
-
-    polyModel.setTermParameter(1, 1, 0.2);
-
-    polyModel.addMultipleTerms(2, {1,2});
-    polyModel.setTermParameter(2, 1, 2);
-    polyModel.setTermParameter(2, 2, -1.5);
-
-    //polyModel.addTerm(0, 1);
-    //polyModel.setTermParameter(0, 1, -0.5);
 
     std::vector<double> testOutput;
     std::vector<double> output;
@@ -773,20 +759,9 @@ void testPolynomial(){
 
     polynomialModel testModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction, output[0], times);
 
-    testModel.addMultipleTerms(2, {1,2});
-    //testModel.addTerm(0, 1);
-    testModel.addTerm(1,1);
-
-    testModel.setTermParameter(1, 1, 0.2);
-
     std::cout << "\nFitting!";
 
-    testModel = polynomialMultiEstimation(testModel, {2}, output, 1, 10000, 0.5, 1000, 1, driftCost, {double(divisions), 5000});
-    //testModel = polynomialMultiEstimation(testModel, {1}, output, 1, 100, 0.9, 100, 1, varianceCost, {double(divisions), 500, 0});
-
-    //polynomialModel testModel = fitPolynomial(output, times, 5, divisions);
-
-    //polynomialModel testModel = polyModel;
+    testModel = bestModelNTerms(output, times, 1, 5, divisions);
 
     eulerMaruyamaWithin(testOutput, testModel, divisions);
 
@@ -814,18 +789,16 @@ void testPolynomial(){
 void constructionTests(){
     polynomialModel testModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction, 0, {0,1,2});
 
-    for(int i = 0; i < 3; i++){
-        testModel.addRandomTerm(0, 5);
-    }
-    testModel.addRandomTerm(2, 5);
+    testModel.addMultipleRandomTerms({0,2}, 5, 5);
+    //testModel.addRandomTerm(2, 5);
 
     std::cout << "\n" << testModel.toString();
 
-    for(int i = 0; i < 6; i++){
-        testModel.neighboringSet(5);
+    // for(int i = 0; i < 6; i++){
+    //     testModel.neighboringSet(5);
 
-        std::cout << "\nNew Model: \n" << testModel.toString();
-    }
+    //     std::cout << "\nNew Model: \n" << testModel.toString();
+    // }
 }
 
 void bugTesting(){
@@ -902,9 +875,9 @@ int main(){
 
     //testFits();
 
-    //testPolynomial();
+    testPolynomial();
 
-    constructionTests();
+    //constructionTests();
 
     //bugTesting();
 

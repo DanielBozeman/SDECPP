@@ -10,6 +10,7 @@
     stochasticModel fitCEV();
 
     polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<double> times, int maxTerm, int divisions);
+    polynomialModel bestModelNTerms(std::vector<double> &observations, std::vector<double> times, int numTerms, int maxTerm, int divisions);
     
     void createPath();
 #endif // __MODELESTIMATIONTESTS_H__

@@ -437,6 +437,95 @@ polynomialModel bestModelNTerms(std::vector<double> &observations, std::vector<d
 
     polynomialModel model = polynomialModel(polynomialWithXFunction, zeroTimeFunction, observations[0], times);
 
+    model.addMultipleRandomTerms({0,2}, maxTerm, numTerms);
+
+    double startingTemp = 500;
+    double tempLimit = 5;
+    double coolingRate = 15;
+    double stepsAtTemp = 100;
+    
+
+    int moveLimit = 1000;
+
+    int notMovedIn = 0;
+
+    double temperature = startingTemp;
+
+    double cost;
+    double prob;
+    double oldCost = std::numeric_limits<double>::infinity();
+
+    polynomialModel currentModel = model;
+    polynomialModel bestModel = model;
+    polynomialModel newModel = model;
+
+    double bestCost = std::numeric_limits<double>::infinity();
+
+    while(temperature > tempLimit){
+
+        for(int i = 0; i < stepsAtTemp; i++){
+        notMovedIn++;
+        
+        while(true){
+            newModel = polynomialMultiEstimation(newModel, {0,2}, observations, 1, 5000, 0.5, 500, 1, driftCost, {double(divisions), 5000});
+            
+            bool zeroTerm = false;
+
+            for(int i = 0; i < newModel.activeTerms[0].size(); i++){
+                if(newModel.parameters[0][newModel.activeTerms[0][i]] == 0.0){
+                    zeroTerm = true;
+                }
+            }
+            for(int i = 0; i < newModel.activeTerms[2].size(); i++){
+                if(newModel.parameters[2][newModel.activeTerms[2][i]] == 0.0){
+                    zeroTerm = true;
+                }
+            }
+            
+            if(!zeroTerm){
+                break;
+            }
+        }
+    
+        cost = driftCost(newModel, observations, 1, {double(divisions), 5000});
+
+
+        //std::cout << "\nCur cost: " << cost;
+        //std::cout << "\n" << newModel.toString();
+
+        if((cost == 0 || abs(cost) == std::numeric_limits<double>::infinity()) && (oldCost == 0 || abs(oldCost) == std::numeric_limits<double>::infinity())){
+            newModel.removeAllTerms();
+            newModel.addMultipleRandomTerms({0,2}, maxTerm, numTerms);
+            //std::cout << "\nIndeterminate cost!";
+            continue;
+        }else{
+            prob = acceptanceProbability(cost, oldCost, temperature);  
+            //std::cout << "\nCur prob: " << prob;     
+        }
+        
+        if(prob > randomGenerator.d01()){
+            oldCost = cost;
+            currentModel = newModel;
+        }
+
+        if(cost < bestCost){
+            notMovedIn = 0;
+            std::cout << "\nBest cost: " << cost << "\nBest model: \n" << bestModel.toString();
+            bestModel = currentModel;
+            bestCost = cost;
+        }
+
+        if(notMovedIn > moveLimit){
+            return bestModel;
+        }
+
+        newModel.neighboringSet(maxTerm);
+
+        }
+    
+        temperature -= coolingRate;
+        std::cout << "\nTemp: " << temperature;
+    }
     return model;
 }
 

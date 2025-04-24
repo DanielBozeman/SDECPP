@@ -276,6 +276,7 @@ void polynomialModel::removeAllTerms(int paramSet){
 void polynomialModel::removeAllTerms(){
     removeAllTerms(0);
     removeAllTerms(1);
+    removeAllTerms(2);
 }
 
 void polynomialModel::addNextTerm(int paramSet){
@@ -324,7 +325,33 @@ void polynomialModel::addRandomTerm(int paramSet, int maxTerm){
     addTerm(paramSet, possibleTerms[choice]);
 }
 
+void polynomialModel::addMultipleRandomTerms(std::vector<int> paramSets, int maxTerm, int numTerms){
+
+    int addedTerms = 0;
+
+    while(addedTerms < numTerms){
+        std::vector<int> possibleParams = {};
+
+        for(int i = 0; i < paramSets.size(); i++){
+            if(activeTerms[paramSets[i]].size() <= maxTerm){
+                possibleParams.push_back(paramSets[i]);
+            }
+        }
+
+        if(possibleParams.size() == 0){
+            std::cout << "\nAll full params!";
+            return;
+        }
+
+        int choice = randomGenerator.next() % possibleParams.size();
+
+        addRandomTerm(possibleParams[choice], maxTerm);
+        addedTerms++;
+    }
+}
+
 int polynomialModel::removeRandomTerm(int paramSet, int maxTerm){
+
     int choice = randomGenerator.next() % activeTerms[paramSet].size();
 
     int term = activeTerms[paramSet][choice];
@@ -341,6 +368,10 @@ void polynomialModel::reRandomizeTerm(int paramSet, int maxTerm){
         return;
     }
 
+    if(activeTerms[paramSet].size() == 0){
+        return;
+    }
+
     int removedTerm = removeRandomTerm(paramSet, maxTerm);
 
     addTerm(paramSet, removedTerm);
@@ -353,6 +384,7 @@ void polynomialModel::reRandomizeTerm(int paramSet, int maxTerm){
 void polynomialModel::swapTerms(int paramSet1, int paramSet2, int maxTerm){
 
     std::vector<int> possibleTakers = {};
+
     if(activeTerms[paramSet1].size() <= maxTerm){
         possibleTakers.push_back(paramSet1);
     }
