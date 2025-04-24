@@ -433,6 +433,13 @@ polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<dou
     return bestOverall;
 }
 
+polynomialModel bestModelNTerms(std::vector<double> &observations, std::vector<double> times, int numTerms, int maxTerm, int divisions){
+
+    polynomialModel model = polynomialModel(polynomialWithXFunction, zeroTimeFunction, observations[0], times);
+
+    return model;
+}
+
 void createPath(){
     auto alphaFunction = [](double& value, double& time, std::vector<double>& parameters){
         return (parameters[0] * value);

@@ -48,33 +48,48 @@ class polynomialModel : public stochasticModel{
 
     public:
 
+    //---------------- INITIALIZERS ----------------------------
     std::vector<std::vector<int>> activeTerms;
 
     polynomialModel(double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{},{}}, std::vector<std::vector<int>> usedTerms= {{},{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{},{}}, std::vector<std::vector<double>> stepSizes = {{},{},{}});  
 
     polynomialModel(time_function alpha, time_function beta, double startValue, std::vector<double> times, std::vector<std::vector<double>> constants = {{},{},{}}, std::vector<std::vector<int>> usedTerms= {{},{},{}}, std::vector<std::vector<std::vector<double>>> constantLimits = {{},{},{}}, std::vector<std::vector<double>> stepSizes = {{},{},{}});  
 
-
+    //---------------- ADDING TERMS ----------------------------
     void addNextTerm(int paramSet);
-    void addTerm(int paramSet, int term);
+    bool addTerm(int paramSet, int term);
     void addMultipleTerms(int paramSet, std::vector<int> terms);
     void addMultipleTerms(int paramSet, int maxTerm);
 
-
+    //---------------- REMOVING TERMS ----------------------------
     void removeLastTerm(int paramSet);
     void removeTerm(int paramSet, int term);
     void removeAllTerms(int paramSet);
     void removeAllTerms();
 
-
+    //---------------- CHANGING PARAMETERS ----------------------------
     void setTermParameter(int paramSet, int term, double coefficient);
     void randomizeParameter(int paramSet) override;
     void randomizeAllParameters(int paramSet);
     void parameterNeighbor(int paramSet) override;
 
+    //---------------- OUTPUT STRING ----------------------------
     std::string toString();
 
+    //---------------- FINDING AIC ----------------------------
     std::vector<long double> calculateAIC(std::vector<double> &observations, int numSims = 100000, int divisions = 100, double percentage = 0.02);
+
+    //---------------- CHANGING EXPONENTS RANDOMLY ----------------------------
+    void addRandomTerm(int paramSet, int maxTerm);
+    int removeRandomTerm(int paramSet, int maxTerm);
+
+    void addMultipleRandomTerms(std::vector<int> paramSet, int maxTerm, int numTerms);
+
+    void reRandomizeTerm(int paramSet, int maxTerm);
+
+    void swapTerms(int paramSet1, int paramSet2, int maxTerm);
+
+    void neighboringSet(int maxTerm);
 };
 
 double zeroFunction(double& value, double& time, std::vector<double>& parameters);

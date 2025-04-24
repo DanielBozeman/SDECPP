@@ -180,8 +180,6 @@ polynomialModel::polynomialModel(time_function alpha, time_function beta, double
     //stochasticModel(polynomialFunction, polynomialFunction, startValue, times, constants, constantLimits, stepSizes); 
 }
 
-
-
 void polynomialModel::parameterNeighbor(int paramSet){
     int choice = randomGenerator.next() % activeTerms[paramSet].size();
 
@@ -208,9 +206,9 @@ void polynomialModel::randomizeAllParameters(int paramSet){
     }
 }
 
-void polynomialModel::addTerm(int paramSet, int term){
+bool polynomialModel::addTerm(int paramSet, int term){
     if(std::find(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), term) != activeTerms[paramSet].end()){
-        return;
+        return false;
     }else{
         activeTerms[paramSet].push_back(term);
     }
@@ -222,10 +220,24 @@ void polynomialModel::addTerm(int paramSet, int term){
             parameters[paramSet].push_back(0);
         }
     }else{
+
+        auto maxIndex = std::max_element(activeTerms[paramSet].begin(), activeTerms[paramSet].end());
+        int maxTerm = 0;
+
+        if(maxIndex == activeTerms[paramSet].end()){
+            maxTerm = term;
+        }else{
+            maxTerm = *maxIndex;
+            if(term > maxTerm){
+                maxTerm = term;
+            }
+        }
+
         parameters[paramSet] = {};
         parameterLimits[paramSet] = {};
         parameterSteps[paramSet] = {};
-        for(int i = 0; i <= term; i++){
+
+        for(int i = 0; i <= maxTerm; i++){
             parameterLimits[paramSet].push_back({0,5});
             parameterSteps[paramSet].push_back(1);
             parameters[paramSet].push_back(0);
@@ -234,6 +246,8 @@ void polynomialModel::addTerm(int paramSet, int term){
             parameters[paramSet][activeTerms[paramSet][i]] = 0.0001;
         }
     }
+
+    return true;
 
 }
 
@@ -284,6 +298,106 @@ void polynomialModel::addMultipleTerms(int paramSet, int maxTerm){
 
 void polynomialModel::setTermParameter(int paramSet, int term, double coefficient){
     parameters[paramSet][term] = coefficient;
+}
+
+void polynomialModel::addRandomTerm(int paramSet, int maxTerm){
+    
+    if(activeTerms[paramSet].size() > maxTerm){
+        std::cout << "\nParam set full";
+        return;
+    }   
+
+    std::vector<int> possibleTerms = {};
+
+    for(int i = 0; i <= maxTerm; i++){
+        auto term = std::find(activeTerms[paramSet].begin(), activeTerms[paramSet].end(), i);
+
+        if(term != activeTerms[paramSet].end()){
+            continue;
+        }else{
+            possibleTerms.push_back(i);
+        }
+    }
+
+    int choice = randomGenerator.next() % possibleTerms.size();
+
+    addTerm(paramSet, possibleTerms[choice]);
+}
+
+int polynomialModel::removeRandomTerm(int paramSet, int maxTerm){
+    int choice = randomGenerator.next() % activeTerms[paramSet].size();
+
+    int term = activeTerms[paramSet][choice];
+
+    removeTerm(paramSet, activeTerms[paramSet][choice]);
+
+    return term;
+}
+
+void polynomialModel::reRandomizeTerm(int paramSet, int maxTerm){
+
+    if(activeTerms[paramSet].size() > maxTerm){
+        std::cout << "\nFull params!";
+        return;
+    }
+
+    int removedTerm = removeRandomTerm(paramSet, maxTerm);
+
+    addTerm(paramSet, removedTerm);
+
+    addRandomTerm(paramSet, maxTerm);
+
+    removeTerm(paramSet, removedTerm);
+}
+
+void polynomialModel::swapTerms(int paramSet1, int paramSet2, int maxTerm){
+
+    std::vector<int> possibleTakers = {};
+    if(activeTerms[paramSet1].size() <= maxTerm){
+        possibleTakers.push_back(paramSet1);
+    }
+    if(activeTerms[paramSet2].size() <= maxTerm){
+        possibleTakers.push_back(paramSet2);
+    }
+
+    if(possibleTakers.size() == 0){
+        std::cout << "\nFull Param sets!";
+        return;
+    }
+
+    int donor;
+    int taker;
+
+    if(activeTerms[paramSet1].size() == 0){
+        donor = paramSet2;
+        taker = paramSet1;
+    }else if(activeTerms[paramSet2].size() == 0){
+        donor = paramSet1;
+        taker = paramSet2;
+    }else{
+        int takerChoice = randomGenerator.next() % possibleTakers.size();
+        taker = possibleTakers[takerChoice];
+
+        if(taker == paramSet1){
+            donor = paramSet2;
+        }else{
+            donor = paramSet1;
+        }
+    }
+
+    removeRandomTerm(donor, maxTerm);
+    addRandomTerm(taker, maxTerm);
+}
+
+void polynomialModel::neighboringSet(int maxTerm){
+    int actionChoice = randomGenerator.next() % 2;
+    int paramChoice = (randomGenerator.next() % 2) *2;
+
+    if(actionChoice == 0){
+        reRandomizeTerm(paramChoice, maxTerm);
+    }else{
+        swapTerms(0, 2, maxTerm);
+    }
 }
 
 std::string polynomialModel::toString(){
