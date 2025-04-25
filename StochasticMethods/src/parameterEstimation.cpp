@@ -657,8 +657,8 @@ std::vector<double> polynomialParamEstimation(polynomialModel model, int paramet
             //newModel.parameters[parameterSet] = currentModel.parameters[parameterSet];
         }
 
-        temperature *= coolingRate;
-        //std::cout << "\nTemperature: " << temperature;
+        temperature -= coolingRate;
+        std::cout << "\nTemperature: " << temperature;
     }
 
     model = bestModel;

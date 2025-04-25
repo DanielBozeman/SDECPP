@@ -731,7 +731,7 @@ void testPolynomial(){
     double initialValue = 1;
 
     double start = 0;
-    double end = 1;
+    double end = 2;
     double dt = 0.05;
     int divisions = 10;
 
@@ -741,9 +741,13 @@ void testPolynomial(){
     
     polynomialModel polyModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction,initialValue, times);
 
-    polyModel.addTerm(0, 0);
+    polyModel.addMultipleTerms(2, {1,0});
 
-    polyModel.setTermParameter(0, 0, 1);
+    polyModel.setTermParameter(2, 1, 1);
+    polyModel.setTermParameter(2, 0, -1);
+
+    polyModel.addTerm(1, 1);
+    polyModel.setTermParameter(1, 1, 0.1);
 
 
     std::vector<double> testOutput;
@@ -761,7 +765,12 @@ void testPolynomial(){
 
     std::cout << "\nFitting!";
 
-    testModel = bestModelNTerms(output, times, 1, 5, divisions);
+    testModel = bestModelNTerms(output, times, 2, 5, divisions);
+    //testModel.parameters[0] = polyModel.parameters[0];
+    //testModel.parameters[2] = polyModel.parameters[2];
+    //testModel = polyModel;
+    testModel.addTerm(1,1);
+    testModel = polynomialMultiEstimation(testModel, {1}, output, 1, 100, 5, 100, 1, varianceCost, {double(divisions), 500});
 
     eulerMaruyamaWithin(testOutput, testModel, divisions);
 
