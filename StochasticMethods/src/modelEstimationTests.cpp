@@ -455,7 +455,7 @@ polynomialModel bestModelNTerms(std::vector<double> &observations, std::vector<d
     }
 
     double startingTemp = 0.025;
-    double tempLimit = 0;
+    double tempLimit = 0.01;
     double coolingRate = 0.005;
     double stepsAtTemp = 100;
     
@@ -530,7 +530,7 @@ polynomialModel bestModelNTerms(std::vector<double> &observations, std::vector<d
 
             if(cost < bestCost){
                 notMovedIn = 0;
-                std::cout << "\nBest cost: " << cost << "\nBest model: \n" << bestModel.toString();
+                //std::cout << "\nBest cost: " << cost << "\nBest model: \n" << bestModel.toString();
                 bestModel = currentModel;
                 bestCost = cost;
             }

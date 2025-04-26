@@ -768,33 +768,64 @@ void testPolynomial(){
     polynomialModel testModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction, output[0], times);
 
     std::cout << "\nFitting!";
+    for(int i = 1; i <= 7; i++){
+        testModel = bestModelNTerms(output, times, i, 7, divisions);
+        //testModel.parameters[0] = polyModel.parameters[0];
+        //testModel.parameters[2] = polyModel.parameters[2];
+        //testModel = polyModel;
+        testModel.addTerm(1,1);
 
-    testModel = bestModelNTerms(output, times, 4, 5, divisions);
-    //testModel.parameters[0] = polyModel.parameters[0];
-    //testModel.parameters[2] = polyModel.parameters[2];
-    //testModel = polyModel;
-    testModel.addTerm(1,1);
-    testModel = polynomialMultiEstimation(testModel, {1}, output, 1, 100, 5, 100, 1, varianceCost, {double(divisions), 500});
+        while(true){
 
-    eulerMaruyamaWithin(testOutput, testModel, divisions);
+            testModel = polynomialMultiEstimation(testModel, {1}, output, 1, 100, 5, 100, 1, varianceCost, {double(divisions), 500});
 
-    // std::vector<long double> testAIC = polyModel.calculateAIC(output, 25000, divisions);
-    // std::vector<long double> aic2 = testModel.calculateAIC(output, 25000, divisions);
+            auto index1 = std::find(testModel.activeTerms[2].begin(), testModel.activeTerms[2].end(), 0);
+            auto index2 = std::find(testModel.activeTerms[0].begin(), testModel.activeTerms[0].end(), 0);
+            
+            if(index1 == testModel.activeTerms[2].end() || index2 == testModel.activeTerms[0].end()){
+                break;
+            }else{
+                std::cout << "\nDoubled constant terms, refitting!";
+            }
+        }
+        eulerMaruyamaWithin(testOutput, testModel, divisions);
 
-    // std::cout << "\nReal AIC: " << testAIC[0];
-    // std::cout << "\nFit AIC: " << aic2[0];
+        // std::vector<long double> testAIC = polyModel.calculateAIC(output, 25000, divisions);
+        // std::vector<long double> aic2 = testModel.calculateAIC(output, 25000, divisions);
 
-    std::cout << "\n" << testModel.toString();
-    //polynomialModel model = fitPolynomial(output, times, 5, divisions);
-    
-    std::vector<std::vector<double>> approximations;
+        // std::cout << "\nReal AIC: " << testAIC[0];
+        // std::cout << "\nFit AIC: " << aic2[0];
 
-    multipleEulerMaruyamaWithin(approximations, testModel, divisions, 1000);
+        std::cout << "\n" << testModel.toString();
+        //polynomialModel model = fitPolynomial(output, times, 5, divisions);
+        
+        std::vector<std::vector<double>> approximations;
 
-    multiVectorToCSV(approximations, "estimationOutput.csv");
+        multipleEulerMaruyamaWithin(approximations, testModel, divisions, 1000);
 
-    vectorToCSV(output, "dataOutput.csv");
+        std::string estimationOut = "estimationOutput";
+        estimationOut.append(std::to_string(i));
+        estimationOut.append(".csv");
 
+        std::string dataOut = "dataOutput";
+        //dataOut.append(std::to_string(i));
+        dataOut.append(".csv");
+
+       
+
+        multiVectorToCSV(approximations, estimationOut);
+
+        vectorToCSV(output, dataOut);
+
+        std::vector<long double> AIC = testModel.calculateAIC(output, 25000, divisions);
+
+        std::cout << "\nAIC: " << AIC[0];
+        
+        int input = 0;
+        std::cout << "\nNow awaiting input!";
+        std::cin >> input;
+        std::cout << "\nNow moving to next model!";
+    }
     std::cout << "\nFinished";
 
 }

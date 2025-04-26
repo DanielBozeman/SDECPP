@@ -37,9 +37,9 @@ void multiVectorToCSV(std::vector<std::vector<double>> outVectors, std::string f
     bool status = std::filesystem::remove(fileName);
 
     if(status){
-        printf( "\nSuccessfully removed file" );
+        //printf( "\nSuccessfully removed file" );
     } else {
-        printf( "\nNo such file!"); // No such file or directory
+        //printf( "\nNo such file!"); // No such file or directory
     }
 
     std::ofstream outfile(fileName);
@@ -47,7 +47,7 @@ void multiVectorToCSV(std::vector<std::vector<double>> outVectors, std::string f
     if (!outfile.is_open()) {
         std::cout << "\nError opening file!";
     }else{
-        std::cout << "\nFile Opened!";
+        //std::cout << "\nFile Opened!";
     }
 
     for(int i = 0; i < outVectors[0].size(); i++){

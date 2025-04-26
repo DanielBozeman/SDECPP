@@ -473,7 +473,7 @@ std::vector<long double> polynomialModel::calculateAIC(std::vector<double>& obse
 
     std::vector<long double> likelihood = findLikelihood(*this, observations, numSims, divisions, percentage);
 
-    return {((2 * (activeTerms[0].size() + activeTerms[1].size())) - 2*likelihood[0]), likelihood[1]};
+    return {((2 * (activeTerms[0].size() + activeTerms[1].size() + activeTerms[2].size())) - 2*likelihood[0]), likelihood[1]};
 }
 
 void linearlySpacedVector(std::vector<double> &xs, double a, double b, double h){   
