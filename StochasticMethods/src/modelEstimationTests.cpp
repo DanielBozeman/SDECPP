@@ -435,9 +435,24 @@ polynomialModel fitPolynomial(std::vector<double> &observations, std::vector<dou
 
 polynomialModel bestModelNTerms(std::vector<double> &observations, std::vector<double> times, int numTerms, int maxTerm, int divisions){
 
-    polynomialModel model = polynomialModel(polynomialWithXFunction, zeroTimeFunction, observations[0], times);
+    polynomialModel model = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction, observations[0], times);
 
-    model.addMultipleRandomTerms({0,2}, maxTerm, numTerms);
+    //model.addMultipleRandomTerms({0,2}, maxTerm, numTerms);
+
+    int nextSet = 0;
+
+
+    model.addTerm(0, 0);
+
+    if(numTerms > 1){
+        model.addTerm(2, 1);
+    }
+    
+    while(model.activeTerms[0].size() + model.activeTerms[2].size() < numTerms){
+        nextSet++;
+        int set = (nextSet % 2) * 2;
+        model.addNextTerm(set);
+    }
 
     double startingTemp = 0.025;
     double tempLimit = 0;

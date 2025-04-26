@@ -280,9 +280,13 @@ void polynomialModel::removeAllTerms(){
 }
 
 void polynomialModel::addNextTerm(int paramSet){
-    int term = *std::max_element(activeTerms[paramSet].begin(), activeTerms[paramSet].end());
+    auto term = std::max_element(activeTerms[paramSet].begin(), activeTerms[paramSet].end());
+    int termInt = -1;
+    if(term != activeTerms[paramSet].end()){
+        termInt = *term;
+    }
 
-    addTerm(paramSet, term+1);
+    addTerm(paramSet, termInt+1);
 }
 
 void polynomialModel::addMultipleTerms(int paramSet, std::vector<int> terms){

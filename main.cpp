@@ -741,13 +741,17 @@ void testPolynomial(){
     
     polynomialModel polyModel = polynomialModel(polynomialWithXFunction, polynomialNoTimeFunction,initialValue, times);
 
-    polyModel.addMultipleTerms(2, {1,0});
+    polyModel.addMultipleTerms(2, {2,1});
+    polyModel.addMultipleTerms(0, {2,0});
 
-    polyModel.setTermParameter(2, 1, 1);
-    polyModel.setTermParameter(2, 0, -1);
+    polyModel.setTermParameter(2, 2, -0.5);
+    polyModel.setTermParameter(2, 1, 2.5);
+
+    polyModel.setTermParameter(0, 2, -1);
+    polyModel.setTermParameter(0, 0, -1);
 
     polyModel.addTerm(1, 1);
-    polyModel.setTermParameter(1, 1, 0.1);
+    polyModel.setTermParameter(1, 1, 0.2);
 
 
     std::vector<double> testOutput;
@@ -765,7 +769,7 @@ void testPolynomial(){
 
     std::cout << "\nFitting!";
 
-    testModel = bestModelNTerms(output, times, 2, 5, divisions);
+    testModel = bestModelNTerms(output, times, 4, 5, divisions);
     //testModel.parameters[0] = polyModel.parameters[0];
     //testModel.parameters[2] = polyModel.parameters[2];
     //testModel = polyModel;
